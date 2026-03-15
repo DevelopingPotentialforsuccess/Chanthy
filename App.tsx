@@ -192,17 +192,21 @@ function App() {
     try {
       const q = query(
         collection(db, 'generatedTests'),
-        where('authorEmail', '==', email),
-        orderBy('timestamp', 'desc'),
-        limit(30)
+        where('authorEmail', '==', email)
       );
       const querySnapshot = await getDocs(q);
       const cloudHistory: HistoryItem[] = [];
       querySnapshot.forEach((doc) => {
         cloudHistory.push(doc.data() as HistoryItem);
       });
-      if (cloudHistory.length > 0) {
-        setHistory(cloudHistory);
+      
+      // Sort in memory to avoid composite index requirement
+      const sortedHistory = cloudHistory
+        .sort((a, b) => b.timestamp - a.timestamp)
+        .slice(0, 30);
+
+      if (sortedHistory.length > 0) {
+        setHistory(sortedHistory);
       }
     } catch (e) {
       console.error("Error fetching cloud history:", e);
@@ -1055,7 +1059,7 @@ ${componentLogic}
             </div>
             <div className="flex gap-2">
               <a 
-                href="https://backend-khmer-program-test-builder-deploy-370806846570.us-west1.run.app/" 
+                href="https://chanthy-master-engine-gbcdawq79gtmzdw7cqfh7f.streamlit.app/?tool=khmer_program&embed=true" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="px-6 py-3 bg-orange-600 text-white rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-orange-500 shadow-xl flex items-center gap-2"
@@ -1070,7 +1074,7 @@ ${componentLogic}
               <p className="text-slate-500 font-bold text-sm">If the tool refuses to connect, please use the "Launch Tool" button above.</p>
             </div>
             <iframe 
-              src="https://backend-khmer-program-test-builder-deploy-370806846570.us-west1.run.app/"
+              src="https://chanthy-master-engine-gbcdawq79gtmzdw7cqfh7f.streamlit.app/?tool=khmer_program&embed=true"
               className="w-full h-full min-h-[800px] border-none relative z-10"
               title="Khmer Program Tool"
               sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads allow-modals allow-top-navigation-by-user-activation"
@@ -1090,7 +1094,7 @@ ${componentLogic}
             </div>
             <div className="flex gap-2">
               <a 
-                href="https://remix-book-creation-4-deploy-370806846570.us-west1.run.app/" 
+                href="https://chanthy-master-engine-gbcdawq79gtmzdw7cqfh7f.streamlit.app/?tool=book_creation&embed=true" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="px-6 py-3 bg-orange-600 text-white rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-orange-500 shadow-xl flex items-center gap-2"
@@ -1105,7 +1109,7 @@ ${componentLogic}
               <p className="text-slate-500 font-bold text-sm">If the tool refuses to connect, please use the "Launch Tool" button above.</p>
             </div>
             <iframe 
-              src="https://remix-book-creation-4-deploy-370806846570.us-west1.run.app/"
+              src="https://chanthy-master-engine-gbcdawq79gtmzdw7cqfh7f.streamlit.app/?tool=book_creation&embed=true"
               className="w-full h-full min-h-[800px] border-none relative z-10"
               title="Book Creation Tool"
               sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads allow-modals allow-top-navigation-by-user-activation"
@@ -1123,10 +1127,24 @@ ${componentLogic}
             <div className="flex-1 text-center">
               <h2 className="text-white font-black uppercase tracking-widest text-[12px]">IELTS Mastermind</h2>
             </div>
+            <div className="flex gap-2">
+              <a 
+                href="https://chanthy-master-engine-gbcdawq79gtmzdw7cqfh7f.streamlit.app/?tool=ielts_master&embed=true" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="px-6 py-3 bg-orange-600 text-white rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-orange-500 shadow-xl flex items-center gap-2"
+              >
+                <i className="fa-solid fa-arrow-up-right-from-square"></i> Launch Tool
+              </a>
+            </div>
           </div>
-          <div className="flex-1 bg-white overflow-hidden">
+          <div className="flex-1 bg-white overflow-hidden relative">
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-10 text-center bg-slate-50 -z-10">
+              <i className="fa-solid fa-circle-exclamation text-4xl text-slate-300 mb-4"></i>
+              <p className="text-slate-500 font-bold text-sm">If the tool refuses to connect, please use the "Launch Tool" button above.</p>
+            </div>
             <iframe 
-              src="https://ielts-mastermind-dpss-deploy-11-370806846570.us-west1.run.app/"
+              src="https://chanthy-master-engine-gbcdawq79gtmzdw7cqfh7f.streamlit.app/?tool=ielts_master&embed=true"
               className="w-full h-full min-h-[800px] border-none"
               title="IELTS Master Tool"
               sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads allow-modals allow-top-navigation-by-user-activation"
@@ -1144,10 +1162,24 @@ ${componentLogic}
             <div className="flex-1 text-center">
               <h2 className="text-white font-black uppercase tracking-widest text-[12px]">DPSS Studio</h2>
             </div>
+            <div className="flex gap-2">
+              <a 
+                href="https://chanthy-master-engine-gbcdawq79gtmzdw7cqfh7f.streamlit.app/?tool=dpss_studio&embed=true" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="px-6 py-3 bg-orange-600 text-white rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-orange-500 shadow-xl flex items-center gap-2"
+              >
+                <i className="fa-solid fa-arrow-up-right-from-square"></i> Launch Tool
+              </a>
+            </div>
           </div>
-          <div className="flex-1 bg-white overflow-hidden">
+          <div className="flex-1 bg-white overflow-hidden relative">
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-10 text-center bg-slate-50 -z-10">
+              <i className="fa-solid fa-circle-exclamation text-4xl text-slate-300 mb-4"></i>
+              <p className="text-slate-500 font-bold text-sm">If the tool refuses to connect, please use the "Launch Tool" button above.</p>
+            </div>
             <iframe 
-              src="https://remix-100-book-creation-deploy-370806846570.us-west1.run.app/"
+              src="https://chanthy-master-engine-gbcdawq79gtmzdw7cqfh7f.streamlit.app/?tool=dpss_studio&embed=true"
               className="w-full h-full min-h-[800px] border-none"
               title="DPSS Studio Tool"
               sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads allow-modals allow-top-navigation-by-user-activation"
