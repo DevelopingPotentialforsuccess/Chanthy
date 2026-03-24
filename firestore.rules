@@ -42,15 +42,17 @@ service cloud.firestore {
     // ===============================================================
     
     function isAuthenticated() {
-      return request.auth != null;
+      return true; // Authentication removed as per user request
     }
 
     function isEmailOwner(email) {
-      return isAuthenticated() && request.auth.token.email == email;
+      return true; // Authentication removed as per user request
     }
 
     function isAdmin() {
-      return isAuthenticated() &&
+      // Keep admin check for the specific email if they happen to be signed in, 
+      // but generally we are allowing public access now.
+      return request.auth != null &&
         (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
           (request.auth.token.email == "sekchanthyoptimize@gmail.com" && request.auth.token.email_verified == true));
     }
@@ -73,7 +75,7 @@ service cloud.firestore {
              data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
              data.content is string && data.content.size() > 0 && data.content.size() < 1000000 &&
              data.timestamp is number &&
-             data.authorEmail is string && data.authorEmail == request.auth.token.email;
+             data.authorEmail is string;
     }
 
     // ===============================================================
@@ -81,34 +83,15 @@ service cloud.firestore {
     // ===============================================================
 
     match /allowed_users/{email} {
-      // Users can read their own whitelist status
-      allow get: if isEmailOwner(email) || isAdmin();
-      
-      // Users can register themselves if they have the correct passcode (handled by app logic, but rules must allow)
-      // We restrict creation to the owner of the email
-      allow create: if isEmailOwner(email) && isValidUser(request.resource.data) && hasOnlyAllowedFields(['email', 'name', 'registeredAt', 'lastLogin', 'status', 'accessCodeUsed']);
-      
-      // Users can update their own last login
-      allow update: if isEmailOwner(email) && isValidUser(request.resource.data) && hasOnlyAllowedFields(['email', 'name', 'registeredAt', 'lastLogin', 'status', 'accessCodeUsed']);
-      
-      // Admins can do anything
-      allow read, write: if isAdmin();
+      allow read, write: if true;
     }
 
     match /user_settings/{email} {
-      allow read, write: if isEmailOwner(email) || isAdmin();
+      allow read, write: if true;
     }
 
     match /generatedTests/{testId} {
-      // Users can only see their own tests
-      allow list: if isAuthenticated() && (request.query.limit <= 30 && request.query.filters.authorEmail == request.auth.token.email) || isAdmin();
-      allow get: if isAuthenticated() && (resource.data.authorEmail == request.auth.token.email) || isAdmin();
-      
-      // Users can create their own tests
-      allow create: if isAuthenticated() && isValidTest(request.resource.data) || isAdmin();
-      
-      // Users can update/delete their own tests
-      allow update, delete: if isAuthenticated() && (resource.data.authorEmail == request.auth.token.email) || isAdmin();
+      allow read, write: if true;
     }
 
     // Default deny

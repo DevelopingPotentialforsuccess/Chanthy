@@ -26,9 +26,8 @@ import {
 } from './constants';
 
 // --- THE NEW FIREBASE MAGIC ---
-import { db, auth, googleProvider } from './firebase';
+import { db } from './firebase';
 import { collection, addDoc, doc, getDoc, setDoc, updateDoc, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
-import { signInWithPopup, signOut, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 // ------------------------------
 
 import { callNeuralEngine } from './services/neuralService';
@@ -49,6 +48,13 @@ const DEFAULT_BRAND_SETTINGS: BrandSettings = {
   logoData: undefined
 };
 
+const DEFAULT_SESSION: UserSession = {
+  name: 'Public Architect',
+  email: 'public@dpss.edu',
+  code: 'dpss',
+  loginTime: Date.now()
+};
+
 const MASTER_PROTOCOLS_KEY = 'dp_master_v46';
 const STRICT_RULES_KEY = 'dp_rules_v46';
 const TEMPLATES_KEY = 'dp_templates_v46';
@@ -59,45 +65,9 @@ const ENGINE_CONFIG_KEY = 'dp_engine_config_v46';
 const ONBOARDING_KEY = 'dp_onboarding_v1';
 
 function App() {
-  const [session, setSession] = useState<UserSession | null>(() => {
-    try {
-      const saved = localStorage.getItem(USER_SESSION_KEY);
-      return saved ? JSON.parse(saved) : null;
-    } catch { return null; }
-  });
+  const [session, setSession] = useState<UserSession>(DEFAULT_SESSION);
 
-  const [authUser, setAuthUser] = useState<FirebaseUser | null>(null);
-  const [isWhitelisted, setIsWhitelisted] = useState<boolean | null>(null);
-  const [authLoading, setAuthLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setAuthUser(user);
-      if (user && user.email) {
-        try {
-          const docRef = doc(db, 'allowed_users', user.email);
-          const docSnap = await getDoc(docRef);
-          setIsWhitelisted(docSnap.exists());
-        } catch (e) {
-          console.error("Error checking whitelist:", e);
-          setIsWhitelisted(false);
-        }
-      } else {
-        setIsWhitelisted(null);
-      }
-      setAuthLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const handleGoogleSignIn = async () => {
-    try {
-      await signInWithPopup(auth, googleProvider);
-    } catch (error: any) {
-      console.error("Google Sign-In Error:", error);
-      setLoginError(error.message);
-    }
-  };
+  const [authLoading, setAuthLoading] = useState(false);
 
   const [viewMode, setViewMode] = useState<'generator' | 'preview' | 'book_creation' | 'ielts_master' | 'dpss_studio' | 'grammar_iframe' | 'khmer_program'>('grammar_iframe');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -274,7 +244,6 @@ function App() {
 
   const [exportSettings, setExportSettings] = useState({
     filename: '',
-    author: '',
     title: '',
     showModal: false
   });
@@ -390,61 +359,12 @@ function App() {
     return priorities[(currentIndex + 1) % priorities.length];
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!authUser) {
-      setLoginError('Authentication required.');
-      return;
-    }
-    
-    const code = loginCode.toLowerCase().trim();
-    if (!loginName.trim()) { setLoginError('Full name is required.'); return; }
-    
-    // Master Passcodes for Registration/Access
-    const validCodes = ['virtues', 'gratitude', 'dpss'];
-    
-    if (validCodes.includes(code)) {
-      try {
-        const email = authUser.email!;
-        const docRef = doc(db, 'allowed_users', email);
-        
-        if (!isWhitelisted) {
-          // SELF-REGISTRATION: Add to database automatically if code is correct
-          await setDoc(docRef, {
-            email: email,
-            name: loginName,
-            registeredAt: Date.now(),
-            lastLogin: Date.now(),
-            status: 'active',
-            accessCodeUsed: code
-          });
-          setIsWhitelisted(true);
-        } else {
-          // UPDATE LAST LOGIN for existing users
-          await updateDoc(docRef, { lastLogin: Date.now() });
-        }
-
-        const newSession: UserSession = { 
-          name: loginName, 
-          code: code, 
-          loginTime: Date.now(),
-          email: email
-        };
-        setSession(newSession);
-        localStorage.setItem(USER_SESSION_KEY, JSON.stringify(newSession));
-      } catch (err: any) {
-        console.error("Auth Error:", err);
-        setLoginError("Neural synchronization failed.");
-      }
-    } else { 
-      setLoginError('Invalid Access Code.'); 
-    }
   };
 
-  const handleLogout = async () => { 
-    setSession(null); 
-    localStorage.removeItem(USER_SESSION_KEY); 
-    await signOut(auth);
+  const handleLogout = () => {
+    // No-op as sign-in is removed
   };
   
   const handleOnboardingComplete = () => {
@@ -733,16 +653,15 @@ ${componentLogic}
     setExportSettings(prev => ({
       ...prev,
       filename: `DPSS_${activeLanguage}_${activeLevel}_${cleanTopic}_${timestamp}`,
-      author: session?.name || '',
       title: `${activeModule} Assessment: ${topic || 'General'}`,
       showModal: true
     }));
   };
 
   const confirmExportWord = () => {
-    const { filename, author, title } = exportSettings;
+    const { filename, title } = exportSettings;
     const logoHtml = brandSettings.logoData ? `<table style="width: 100%; border: none; margin-bottom: 8pt;"><tr><td style="border: none; text-align: center;"><img src="${brandSettings.logoData}" width="621" style="width: 16.43cm;" /></td></tr></table>` : '';
-    const header = `${logoHtml}<table style="width: 100%; border-bottom: 2pt solid black; margin-bottom: 15pt; font-family: 'Times New Roman', serif;"><tr><td style="border: none; width: 50%;"><b>Teacher:</b> ${author || session?.name || '________________'}</td><td style="border: none; width: 50%; text-align: right;"><b>${activeModule}: ${topic || 'Assessment'}</b><br/>${activeLevel} | ${activeLanguage}</td></tr></table>`;
+    const header = `${logoHtml}<table style="width: 100%; border-bottom: 2pt solid black; margin-bottom: 15pt; font-family: 'Times New Roman', serif;"><tr><td style="border: none; width: 100%; text-align: right;"><b>${activeModule}: ${topic || 'Assessment'}</b><br/>${activeLevel} | ${activeLanguage}</td></tr></table>`;
     
     // Prepend header to content as the new exportToWord only takes 2 arguments
     const fullContent = header + worksheetContent;
@@ -804,64 +723,6 @@ ${componentLogic}
     setExpandedTemplateId(newId);
   };
 
-  if (!session) {
-    return (
-      <div className="h-screen w-screen bg-[#0b1221] flex items-center justify-center p-6 text-white overflow-hidden">
-        <div className="w-full max-w-xl bg-white/5 backdrop-blur-xl border border-white/10 rounded-[64px] p-12 text-center shadow-2xl">
-           <div className="h-20 w-20 bg-orange-600 rounded-3xl flex items-center justify-center shadow-2xl mx-auto mb-12"><i className="fa-solid fa-bolt text-white text-3xl"></i></div>
-           <h1 className="text-2xl font-[900] uppercase tracking-wider mb-8">DPSS Ultimate Test Builder Backend</h1>
-           
-           {authLoading ? (
-             <div className="flex flex-col items-center gap-4 py-10">
-               <i className="fa-solid fa-spinner animate-spin text-4xl text-orange-500"></i>
-               <p className="text-xs font-black uppercase tracking-widest text-slate-500">Synchronizing Neural Identity...</p>
-             </div>
-           ) : !authUser ? (
-             <div className="space-y-8 animate-in fade-in zoom-in duration-500">
-               <p className="text-slate-400 text-sm font-medium">Please sign in with your school Google account to proceed.</p>
-               <button 
-                 onClick={handleGoogleSignIn}
-                 className="w-full bg-white text-slate-900 py-6 rounded-3xl text-sm font-black uppercase tracking-widest hover:bg-slate-100 shadow-xl transition-all flex items-center justify-center gap-4"
-               >
-                 <i className="fa-brands fa-google text-xl"></i>
-                 Sign in with Google
-               </button>
-               {loginError && <p className="text-rose-500 text-xs font-black uppercase">{loginError}</p>}
-             </div>
-           ) : (
-             <form onSubmit={handleLogin} className="space-y-6 text-left animate-in fade-in slide-in-from-bottom-6 duration-500">
-                <div className="flex items-center gap-4 p-4 bg-white/5 border border-white/10 rounded-3xl mb-4">
-                  <img src={authUser.photoURL || ''} className="h-10 w-10 rounded-full border border-white/20" alt="" />
-                  <div className="flex-1">
-                    <div className="text-[10px] font-black uppercase text-slate-500">
-                      {isWhitelisted ? 'Authenticated Identity' : 'New Neural Identity'}
-                    </div>
-                    <div className="text-xs font-bold text-white truncate">{authUser.email}</div>
-                  </div>
-                  <button type="button" onClick={handleLogout} className="text-slate-500 hover:text-rose-500 transition-colors"><i className="fa-solid fa-right-from-bracket"></i></button>
-                </div>
-                
-                {!isWhitelisted && (
-                  <div className="p-4 bg-orange-500/10 border border-orange-500/20 rounded-2xl mb-4">
-                    <p className="text-[10px] font-bold text-orange-500 uppercase tracking-widest text-center">
-                      Self-Registration Mode: Enter Passcode to Register
-                    </p>
-                  </div>
-                )}
-
-                <input type="text" value={loginName} onChange={(e) => setLoginName(e.target.value)} placeholder="Full Name" className="w-full bg-white/5 border border-white/10 rounded-3xl px-8 py-5 outline-none focus:border-orange-500 font-bold" />
-                <input type="password" value={loginCode} onChange={(e) => setLoginCode(e.target.value)} placeholder="Access Code / Passcode" className="w-full bg-white/5 border border-white/10 rounded-3xl px-8 py-5 outline-none focus:border-orange-500 font-bold" />
-                {loginError && <p className="text-rose-500 text-xs font-black uppercase text-center">{loginError}</p>}
-                <button type="submit" className="w-full bg-orange-600 text-white py-6 rounded-3xl text-sm font-black uppercase tracking-widest hover:brightness-110 shadow-xl transition-all">
-                  {isWhitelisted ? 'Synchronize Neural Path' : 'Register & Initialize'}
-                </button>
-             </form>
-           )}
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="flex h-screen overflow-hidden text-slate-300 relative transition-all duration-500">
       {showOnboarding && <OnboardingTutorial onComplete={handleOnboardingComplete} />}
@@ -875,7 +736,6 @@ ${componentLogic}
               <div className="p-6 border-t border-[#1f2937] space-y-2">
               <button onClick={() => setShowOnboarding(true)} className="w-full flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/10 text-slate-400 text-[9px] font-black uppercase hover:bg-white/10 transition-all"><span>Restart Tutorial</span><i className="fa-solid fa-circle-question"></i></button>
               <button onClick={() => setShowSettings(true)} className="w-full flex items-center justify-between p-5 rounded-2xl bg-gradient-to-r from-accent-orange-dark to-accent-orange-light text-white shadow-lg uppercase text-[11px] font-black hover:brightness-110 transition-all"><span>Architect Settings</span><i className="fa-solid fa-gear"></i></button>
-              <button onClick={handleLogout} className="w-full p-4 rounded-2xl bg-white/5 border border-white/10 text-slate-500 text-[9px] font-black uppercase hover:bg-white/10 transition-all">Logout Session</button>
             </div>
           </aside>
 
@@ -884,7 +744,7 @@ ${componentLogic}
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                   <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="h-12 w-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white lg:hidden"><i className={`fa-solid ${isSidebarOpen ? 'fa-angles-left' : 'fa-bars'}`}></i></button>
-                  <div><h1 className="text-xl lg:text-3xl font-[900] uppercase tracking-wider text-white">DPSS Ultimate Test Builder</h1><span className="text-orange-500 text-[9px] font-black uppercase tracking-widest mt-1 block">Architect: {session.name}</span></div>
+                  <div><h1 className="text-xl lg:text-3xl font-[900] uppercase tracking-wider text-white">DPSS Ultimate Test Builder</h1></div>
                 </div>
                 <div className="h-12 w-12 bg-orange-600 rounded-xl flex items-center justify-center shadow-lg"><i className="fa-solid fa-bolt text-white text-xl"></i></div>
               </div>
@@ -1392,17 +1252,17 @@ ${componentLogic}
                     <div className="space-y-8">
                        <div className="flex justify-between items-center px-2">
                          <h3 className="text-[13px] font-black text-master-green uppercase tracking-widest">Master Protocols</h3>
-                         {!(session?.code === 'dpss' || session?.code === 'gratitude') && (
+                         {!(session?.code === 'dpss' || session?.code === 'gratitude' || session?.code === 'virtues') && (
                            <div className="flex items-center gap-2 text-rose-500 animate-pulse">
                              <i className="fa-solid fa-lock text-[10px]"></i>
                              <span className="text-[10px] font-black uppercase tracking-widest">Restricted Access</span>
                            </div>
                          )}
-                         {(session?.code === 'dpss' || session?.code === 'gratitude') && (
+                         {(session?.code === 'dpss' || session?.code === 'gratitude' || session?.code === 'virtues') && (
                            <button onClick={addProtocol} className="text-[11px] font-black text-master-green uppercase border-b-2 border-master-green">+ New Protocol</button>
                          )}
                        </div>
-                       {(session?.code === 'dpss' || session?.code === 'gratitude') ? (
+                       {(session?.code === 'dpss' || session?.code === 'gratitude' || session?.code === 'virtues') ? (
                          <>
                            <div className="flex bg-slate-100/50 p-1.5 rounded-[24px] gap-1 overflow-x-auto no-scrollbar shadow-sm border border-slate-100 self-start">
                              {['General', 'Grammar', 'Vocabulary', 'Reading'].map(cat => (
@@ -1553,7 +1413,6 @@ ${componentLogic}
                 )}
              </div>
               <div className="p-12 bg-slate-50 border-t border-slate-100 flex justify-end gap-4">
-                <button onClick={handleLogout} className="px-16 py-6 bg-white border border-slate-200 text-rose-500 rounded-full text-[12px] font-black uppercase shadow-sm hover:bg-rose-50 transition-all">Terminate Architecture</button>
                 <button onClick={hardReset} className="px-16 py-6 bg-rose-600 text-white rounded-full text-[12px] font-black uppercase shadow-xl hover:bg-rose-700 transition-all">Hard Reset</button>
                 <button onClick={syncWithDefaults} className="px-16 py-6 bg-slate-900 text-white rounded-full text-[12px] font-black uppercase shadow-xl hover:bg-black transition-all">Sync Settings</button>
                 <button onClick={() => setShowSettings(false)} className="px-16 py-6 bg-gradient-to-r from-accent-orange-dark to-accent-orange-light text-white rounded-full text-[12px] font-black uppercase shadow-xl hover:brightness-110 transition-all">Close Panel</button>
@@ -1600,17 +1459,6 @@ ${componentLogic}
                     onChange={e => setExportSettings(prev => ({ ...prev, title: e.target.value }))}
                     className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 outline-none focus:border-orange-500 font-bold text-slate-700"
                     placeholder="Enter title..."
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Author Name</label>
-                  <input 
-                    type="text" 
-                    value={exportSettings.author} 
-                    onChange={e => setExportSettings(prev => ({ ...prev, author: e.target.value }))}
-                    className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 outline-none focus:border-orange-500 font-bold text-slate-700"
-                    placeholder="Enter author..."
                   />
                 </div>
               </div>
