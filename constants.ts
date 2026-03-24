@@ -15,7 +15,7 @@ export const THEMES: Theme[] = [
   { id: 'royal', name: 'Royal Blueprint', color: '#1e3a8a', bg: '#f8fafc', accent: '#3b82f6' },
   { id: 'forest', name: 'Forest Scholar', color: '#064e3b', bg: '#f0fdf4', accent: '#10b981' },
   { id: 'crimson', name: 'Crimson Archive', color: '#7f1d1d', bg: '#fef2f2', accent: '#ef4444' },
-  { id: 'midnight', name: 'Midnight Architect', color: '#1e293b', bg: '#0f172a', accent: '#6366f1' },
+  { id: 'midnight', name: 'Midnight Engine', color: '#1e293b', bg: '#0f172a', accent: '#6366f1' },
   { id: 'beach', name: 'Tropical Beach', color: '#0284c7', bg: 'linear-gradient(to bottom, #bae6fd, #fef3c7)', accent: '#0ea5e9' },
   { id: 'sunset', name: 'Sunset Horizon', color: '#9d174d', bg: 'linear-gradient(to top right, #fdf2f8, #fff7ed)', accent: '#db2777' },
   { id: 'nebula', name: 'Deep Nebula', color: '#7c3aed', bg: 'radial-gradient(circle at center, #2e1065, #0f172a)', accent: '#8b5cf6' },
@@ -219,7 +219,7 @@ A. have to add          B. had to add          C. must add          D. has to ad
    - The footer must contain:
      1. A row of 3 large emojis (40pt).
      2. A randomized, inspiring personal development quote in italics.
-     3. The specific text: "Pre5-Chanthy-S2-20Copies-(Grammar)" in bold.
+     3. The specific text: "Pre5-S2-20Copies-(Grammar)" in bold.
    - Use HTML for styling: <div style="text-align: center; margin-top: 50px;">...</div>
 
 31. [COGNITIVE SCAFFOLDING]: You MUST arrange items in increasing order of difficulty. Items 1-3 should be "Confidence Builders" (clearer context). Items 4-8 should be "Standard Application". Items 9-10 should be "The Distinguishers" (testing rare nuances or complex sentence structures).

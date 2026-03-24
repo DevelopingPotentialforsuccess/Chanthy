@@ -49,7 +49,7 @@ const DEFAULT_BRAND_SETTINGS: BrandSettings = {
 };
 
 const DEFAULT_SESSION: UserSession = {
-  name: 'Public Architect',
+  name: 'Public User',
   email: 'public@dpss.edu',
   code: 'dpss',
   loginTime: Date.now()
@@ -65,7 +65,12 @@ const ENGINE_CONFIG_KEY = 'dp_engine_config_v46';
 const ONBOARDING_KEY = 'dp_onboarding_v1';
 
 function App() {
-  const [session, setSession] = useState<UserSession>(DEFAULT_SESSION);
+  const [session, setSession] = useState<UserSession>({
+    name: 'Public User',
+    email: 'public@dpss.edu',
+    code: 'dpss',
+    loginTime: Date.now()
+  });
 
   const [authLoading, setAuthLoading] = useState(false);
 
@@ -735,7 +740,7 @@ ${componentLogic}
             </div>
               <div className="p-6 border-t border-[#1f2937] space-y-2">
               <button onClick={() => setShowOnboarding(true)} className="w-full flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/10 text-slate-400 text-[9px] font-black uppercase hover:bg-white/10 transition-all"><span>Restart Tutorial</span><i className="fa-solid fa-circle-question"></i></button>
-              <button onClick={() => setShowSettings(true)} className="w-full flex items-center justify-between p-5 rounded-2xl bg-gradient-to-r from-accent-orange-dark to-accent-orange-light text-white shadow-lg uppercase text-[11px] font-black hover:brightness-110 transition-all"><span>Architect Settings</span><i className="fa-solid fa-gear"></i></button>
+              <button onClick={() => setShowSettings(true)} className="w-full flex items-center justify-between p-5 rounded-2xl bg-gradient-to-r from-accent-orange-dark to-accent-orange-light text-white shadow-lg uppercase text-[11px] font-black hover:brightness-110 transition-all"><span>Workspace Settings</span><i className="fa-solid fa-gear"></i></button>
             </div>
           </aside>
 
@@ -861,7 +866,7 @@ ${componentLogic}
       {viewMode === 'preview' && (
         <section className="flex-1 flex flex-col overflow-hidden animate-in fade-in duration-500">
           <div className="p-4 lg:p-6 border-b border-[#1f2937] flex flex-wrap gap-4 justify-between items-center backdrop-blur-xl z-10 no-print shadow-2xl">
-            <button onClick={() => setViewMode('generator')} className="border border-[#1f2937] text-white px-6 lg:px-8 py-3 rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-slate-900/50 flex items-center gap-4 group shadow-xl"><i className="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i> ARCHITECT</button>
+            <button onClick={() => setViewMode('generator')} className="border border-[#1f2937] text-white px-6 lg:px-8 py-3 rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-slate-900/50 flex items-center gap-4 group shadow-xl"><i className="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i> WORKSPACE</button>
             <div className="flex gap-2 lg:gap-3 ml-auto">
               <button onClick={handleExportWord} className="px-6 lg:px-10 py-3 bg-[#ea580c] text-white rounded-full text-[11px] font-black uppercase tracking-widest hover:brightness-110 shadow-2xl">EXPORT DOC</button>
               <button onClick={handlePrint} className="h-10 w-10 lg:h-12 lg:w-12 bg-[#111827]/50 border border-[#1f2937] rounded-full flex items-center justify-center text-slate-400 hover:text-orange-500 transition-all shadow-xl">
@@ -877,10 +882,10 @@ ${componentLogic}
         <section className="flex-1 flex flex-col overflow-hidden animate-in fade-in duration-500">
           <div className="p-4 lg:p-6 border-b border-[#1f2937] flex flex-wrap gap-4 justify-between items-center backdrop-blur-xl z-10 no-print shadow-2xl">
             <button onClick={() => setViewMode('generator')} className="border border-[#1f2937] text-white px-6 lg:px-8 py-3 rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-slate-900/50 flex items-center gap-4 group shadow-xl">
-              <i className="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i> ARCHITECT
+              <i className="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i> WORKSPACE
             </button>
             <div className="flex-1 text-center">
-              <h2 className="text-white font-black uppercase tracking-widest text-[12px]">Neural Grammar Architect</h2>
+              <h2 className="text-white font-black uppercase tracking-widest text-[12px]">Neural Grammar Engine</h2>
             </div>
             <div className="flex gap-2">
               <a 
@@ -912,7 +917,7 @@ ${componentLogic}
         <section className="flex-1 flex flex-col overflow-hidden animate-in fade-in duration-500">
           <div className="p-4 lg:p-6 border-b border-[#1f2937] flex flex-wrap gap-4 justify-between items-center backdrop-blur-xl z-10 no-print shadow-2xl">
             <button onClick={() => setViewMode('generator')} className="border border-[#1f2937] text-white px-6 lg:px-8 py-3 rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-slate-900/50 flex items-center gap-4 group shadow-xl">
-              <i className="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i> ARCHITECT
+              <i className="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i> WORKSPACE
             </button>
             <div className="flex-1 text-center">
               <h2 className="text-white font-black uppercase tracking-widest text-[12px]">Khmer Program Test Builder</h2>
@@ -947,10 +952,10 @@ ${componentLogic}
         <section className="flex-1 flex flex-col overflow-hidden animate-in fade-in duration-500">
           <div className="p-4 lg:p-6 border-b border-[#1f2937] flex flex-wrap gap-4 justify-between items-center backdrop-blur-xl z-10 no-print shadow-2xl">
             <button onClick={() => setViewMode('generator')} className="border border-[#1f2937] text-white px-6 lg:px-8 py-3 rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-slate-900/50 flex items-center gap-4 group shadow-xl">
-              <i className="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i> ARCHITECT
+              <i className="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i> WORKSPACE
             </button>
             <div className="flex-1 text-center">
-              <h2 className="text-white font-black uppercase tracking-widest text-[12px]">Neural Book Architect</h2>
+              <h2 className="text-white font-black uppercase tracking-widest text-[12px]">Neural Book Engine</h2>
             </div>
             <div className="flex gap-2">
               <a 
@@ -982,7 +987,7 @@ ${componentLogic}
         <section className="flex-1 flex flex-col overflow-hidden animate-in fade-in duration-500">
           <div className="p-4 lg:p-6 border-b border-[#1f2937] flex flex-wrap gap-4 justify-between items-center backdrop-blur-xl z-10 no-print shadow-2xl">
             <button onClick={() => setViewMode('generator')} className="border border-[#1f2937] text-white px-6 lg:px-8 py-3 rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-slate-900/50 flex items-center gap-4 group shadow-xl">
-              <i className="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i> ARCHITECT
+              <i className="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i> WORKSPACE
             </button>
             <div className="flex-1 text-center">
               <h2 className="text-white font-black uppercase tracking-widest text-[12px]">IELTS Mastermind</h2>
@@ -1017,7 +1022,7 @@ ${componentLogic}
         <section className="flex-1 flex flex-col overflow-hidden animate-in fade-in duration-500">
           <div className="p-4 lg:p-6 border-b border-[#1f2937] flex flex-wrap gap-4 justify-between items-center backdrop-blur-xl z-10 no-print shadow-2xl">
             <button onClick={() => setViewMode('generator')} className="border border-[#1f2937] text-white px-6 lg:px-8 py-3 rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-slate-900/50 flex items-center gap-4 group shadow-xl">
-              <i className="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i> ARCHITECT
+              <i className="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i> WORKSPACE
             </button>
             <div className="flex-1 text-center">
               <h2 className="text-white font-black uppercase tracking-widest text-[12px]">DPSS Studio</h2>
@@ -1059,7 +1064,7 @@ ${componentLogic}
         <div className="fixed inset-0 z-[250] bg-slate-950/80 backdrop-blur-2xl flex items-center justify-center p-4">
           <div className="bg-[#f8fafc] bg-[radial-gradient(circle_at_top_right,rgba(234,88,12,0.03),transparent_40%),radial-gradient(circle_at_bottom_left,rgba(37,99,235,0.03),transparent_40%)] rounded-[48px] lg:rounded-[64px] w-full max-w-7xl h-full max-h-[95vh] overflow-hidden shadow-2xl flex flex-col border border-white/50">
              <div className="p-8 lg:p-12 pb-4 flex justify-between items-center"><div className="flex items-center gap-4"><div className="h-4 w-4 bg-orange-600 rounded-full animate-pulse"></div><h2 className="text-[12px] font-black uppercase text-slate-900 tracking-widest">Workspace Control Node</h2></div><button onClick={() => setShowSettings(false)} className="h-10 w-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900"><i className="fa-solid fa-xmark text-xl"></i></button></div>
-             <div className="px-6 lg:px-12 mb-8"><div className="flex bg-slate-100/70 p-2 rounded-[32px] gap-1 overflow-x-auto no-scrollbar shadow-inner">{['ACCOUNT', 'COMMAND', 'ENGINE', 'BACKBONE LOGIC', 'DISPLAY', 'DESIGN'].map(tab => (<button key={tab} onClick={() => setSettingsTab(tab as SettingsTab)} className={`px-6 lg:px-10 py-4 rounded-[28px] text-[10px] font-black uppercase tracking-widest transition-all ${settingsTab === tab ? 'bg-orange-600 text-white shadow-xl' : 'text-slate-400 hover:text-slate-600'}`}>{tab}</button>))}</div></div>
+             <div className="px-6 lg:px-12 mb-8"><div className="flex bg-slate-100/70 p-2 rounded-[32px] gap-1 overflow-x-auto no-scrollbar shadow-inner">{['COMMAND', 'ENGINE', 'BACKBONE LOGIC', 'DISPLAY', 'DESIGN'].map(tab => (<button key={tab} onClick={() => setSettingsTab(tab as SettingsTab)} className={`px-6 lg:px-10 py-4 rounded-[28px] text-[10px] font-black uppercase tracking-widest transition-all ${settingsTab === tab ? 'bg-orange-600 text-white shadow-xl' : 'text-slate-400 hover:text-slate-600'}`}>{tab}</button>))}</div></div>
              <div className="flex-1 overflow-y-auto px-6 lg:px-12 pb-12 space-y-12 no-scrollbar">
                 {settingsTab === 'DESIGN' && (
                   <div className="space-y-12 animate-in fade-in slide-in-from-bottom-6">
@@ -1132,18 +1137,6 @@ ${componentLogic}
                         })}
                      </div>
                    </div>
-                )}
-                {settingsTab === 'ACCOUNT' && (
-                  <div className="space-y-10 animate-in fade-in slide-in-from-bottom-6">
-                    <h3 className="text-[13px] font-black text-slate-900 uppercase tracking-widest">Session Identity</h3>
-                    <div className="bg-white border border-slate-100 rounded-[40px] p-10 flex items-center gap-8 shadow-sm">
-                      <div className="h-20 w-20 bg-orange-600 rounded-full flex items-center justify-center text-white text-3xl font-black">{session.name.charAt(0)}</div>
-                      <div className="space-y-1">
-                        <div className="text-2xl font-black text-slate-900 uppercase">{session.name}</div>
-                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Access Code: {session.code} • Active since {new Date(session.loginTime).toLocaleTimeString()}</div>
-                      </div>
-                    </div>
-                  </div>
                 )}
                 {settingsTab === 'ENGINE' && (
                   <div className="space-y-10 animate-in fade-in slide-in-from-bottom-6">
@@ -1334,7 +1327,7 @@ ${componentLogic}
                          <div className="p-12 border-2 border-dashed border-slate-100 rounded-[40px] flex flex-col items-center justify-center gap-4 bg-slate-50/50">
                            <i className="fa-solid fa-shield-halved text-slate-200 text-4xl"></i>
                            <div className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Neural Protocols Encrypted</div>
-                           <div className="text-[9px] font-medium text-slate-400 text-center max-w-[200px]">Please authenticate with a Master Architect code to modify core protocols.</div>
+                           <div className="text-[9px] font-medium text-slate-400 text-center max-w-[200px]">Please authenticate with a Master code to modify core protocols.</div>
                          </div>
                        )}
                     </div>
