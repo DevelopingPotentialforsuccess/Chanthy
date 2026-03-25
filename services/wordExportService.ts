@@ -9,6 +9,7 @@ export const exportToWord = async (
   filename: string, 
   headerHtml: string = '', 
   marginValue: string = '0.6cm',
+  fontFamily: string = 'Times New Roman',
   metadata?: ExportMetadata
 ) => {
   const tempDiv = document.createElement('div');
@@ -106,7 +107,7 @@ export const exportToWord = async (
       <style>
         @page Section1 { size: 8.5in 11.0in; margin: ${marginValue}; }
         div.Section1 { page: Section1; }
-        body { font-family: "Segoe UI", Arial, sans-serif; font-size: 11pt; }
+        body { font-family: "${fontFamily}", serif; font-size: 12pt; }
         img { border: none; }
         table { mso-table-lspace:0pt; mso-table-rspace:0pt; }
       </style>

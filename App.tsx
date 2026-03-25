@@ -45,7 +45,8 @@ const DEFAULT_BRAND_SETTINGS: BrandSettings = {
   schoolAddress: 'Developing Potential for Success School',
   logos: Array(30).fill(undefined),
   logoWidth: 300,
-  logoData: undefined
+  logoData: undefined,
+  fontFamily: 'Times New Roman'
 };
 
 const DEFAULT_SESSION: UserSession = {
@@ -580,12 +581,23 @@ ${componentLogic}
     `;
     
     try {
+      // Randomize font from the 3 requested fonts
+      const fonts = ['Times New Roman', 'Comic Sans MS', 'Garamond'];
+      const randomFont = fonts[Math.floor(Math.random() * fonts.length)];
+      
       // Randomize logo from available logos
       const availableLogos = brandSettings.logos.filter(l => !!l);
+      let selectedLogo = brandSettings.logoData;
       if (availableLogos.length > 0) {
-        const randomLogo = availableLogos[Math.floor(Math.random() * availableLogos.length)];
-        setBrandSettings(prev => ({ ...prev, logoData: randomLogo }));
+        selectedLogo = availableLogos[Math.floor(Math.random() * availableLogos.length)];
       }
+
+      setBrandSettings(prev => ({ 
+        ...prev, 
+        logoData: selectedLogo,
+        fontFamily: randomFont,
+        fontSize: 12 // Ensure font size is 12 as requested
+      }));
 
       // FIREBASE CLOUD SAVE IMPLEMENTATION
       // ==================================================
@@ -665,15 +677,19 @@ ${componentLogic}
 
   const confirmExportWord = () => {
     const { filename, title } = exportSettings;
+    const font = brandSettings.fontFamily || 'Times New Roman';
     const logoHtml = brandSettings.logoData ? `<table style="width: 100%; border: none; margin-bottom: 2pt;"><tr><td style="border: none; text-align: center;"><img src="${brandSettings.logoData}" width="621" style="width: 16.43cm;" /></td></tr></table>` : '';
-    const header = `${logoHtml}<table style="width: 100%; border-bottom: 2pt solid black; margin-bottom: 5pt; font-family: 'Times New Roman', serif;"><tr><td style="border: none; width: 100%; text-align: right;"><b>${activeModule}: ${topic || 'Assessment'}</b><br/>${activeLevel} | ${activeLanguage}</td></tr></table>`;
+    const header = `${logoHtml}<table style="width: 100%; border-bottom: 2pt solid black; margin-bottom: 5pt; font-family: '${font}', serif;"><tr><td style="border: none; width: 100%; text-align: right;"><b>${activeModule}: ${topic || 'Assessment'}</b><br/>${activeLevel} | ${activeLanguage}</td></tr></table>`;
     
     // Prepend header to content as the new exportToWord only takes 2 arguments
     const fullContent = header + worksheetContent;
     
     exportToWord(
       fullContent, 
-      filename || `DPSS_Test_${activeLanguage}_${activeLevel}`
+      filename || `DPSS_Test_${activeLanguage}_${activeLevel}`,
+      '',
+      '0.6cm',
+      font
     );
     
     setExportSettings(prev => ({ ...prev, showModal: false }));

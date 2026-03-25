@@ -51,7 +51,7 @@ const Worksheet: React.FC<WorksheetProps> = ({
       <div className="max-w-[210mm] mx-auto pb-64 shadow-2xl worksheet-paper">
         <style>{`
           .prose { 
-            font-family: 'Times New Roman', Times, serif !important; 
+            font-family: '${brandSettings.fontFamily || 'Times New Roman'}', Times, serif !important; 
             font-size: ${brandSettings.fontSize || 12}pt !important; 
           }
           .prose table { border-collapse: collapse !important; width: 100% !important; border: 1.5pt solid black !important; table-layout: fixed; }

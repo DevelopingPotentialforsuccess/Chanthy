@@ -92,6 +92,7 @@ export interface BrandSettings {
   logos: (string | undefined)[]; 
   logoWidth: number;
   logoData?: string;
+  fontFamily?: string;
 }
 
 export interface UserSession {
