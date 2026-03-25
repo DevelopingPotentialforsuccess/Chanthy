@@ -194,7 +194,7 @@ A. have to add          B. had to add          C. must add          D. has to ad
      1. A row of 3 large emojis (40pt).
      2. A randomized, inspiring personal development quote in italics.
      3. The specific text: "Pre5-Chanthy-S2-20Copies-(Grammar)" in bold.
-   - Use HTML for styling: <div style="text-align: center; margin-top: 50px;">...</div>
+   - Use HTML for styling: <div style="text-align: center; margin-top: 20px;">...</div>
 
 31. [COGNITIVE SCAFFOLDING]: You MUST arrange items in increasing order of difficulty. Items 1-3 should be "Confidence Builders" (clearer context). Items 4-8 should be "Standard Application". Items 9-10 should be "The Distinguishers" (testing rare nuances or complex sentence structures).
 32. [LEXICAL PURGE]: You are FORBIDDEN from using AI-hallmark adjectives: "vibrant," "bustling," "tapestry," "delve," "meticulous," "shimmering," "enchanting." Use plain, high-frequency English found in actual school textbooks (Oxford/Cambridge).
@@ -219,10 +219,38 @@ Examples of grammar systems:
 Students should choose the correct answer based on the target grammar rule, not by eliminating unrelated grammar forms. For examples, 
 You ____ wear a helmet here.
 A. must wear          B. have to wear          C. must have          D. had to
+
+43. [SPACE EFFICIENCY & COMPACTNESS]:
+   - You are strictly FORBIDDEN from wasting vertical space. 
+   - NO line breaks (<br>) or newlines after a number (e.g., 1.). The text MUST follow the number on the same line.
+   - TABLE COMPACTNESS: In all HTML tables, use style="border-collapse: collapse; width: 100%; margin: 0;" and ensure <td> tags have minimal padding (e.g., padding: 1px 2px;). 
+   - NO empty paragraphs (<p>&nbsp;</p>) or excessive margins between sections.
+   - NO wrapping individual list items in <p> tags; use <div> or <span> with style="margin: 0;" to keep rows tight.
+   - Aim for the density seen in professional workbooks (high information density, minimal white space).
+
+44. [NUMBER-CONTENT ADJACENCY]:
+   - The text content of a numbered item MUST follow the number immediately on the same line. 
+   - You are strictly FORBIDDEN from inserting a newline, paragraph break, or <br> between the number (e.g., 1.) and the sentence/content.
+
+45. [HEADER COMPACTNESS]:
+   - All instruction headers (e.g., PART A: MCQ) MUST have minimal vertical margin (max 5px). 
+   - Use <b> tags for headers, NOT <h2> or <h3> tags which add default vertical margins.
+
+46. [LIST DENSITY]:
+   - In any numbered or bulleted list, ensure there is NO extra vertical space between items. 
+   - Do NOT use <p> tags for individual items; use <li> or <div> with style="margin: 0; padding: 0;" to keep items tight.
+
+47. [INSTRUCTION-CONTENT PROXIMITY]:
+   - There MUST be NO empty lines or <br> between an instruction (e.g., Circle the correct option) and the first item of that section.
+
+48. [ZERO-MARGIN EXPORT PROTOCOL]:
+   - To prevent word processors from adding "useless space" during export, apply style="margin: 0; padding: 0;" to ALL structural elements (div, table, tr, td).
+   - Forbid the use of <p> tags entirely; use <div> with style="margin: 0;" for line-level content.
+   - Ensure the total vertical height of the document is minimized.
 `;
 
 export const BORDER_FRAME_INSTRUCTION = `### STYLIST FRAME PROTOCOL ###
-Wrap content in a double border: border: 4px double #ea580c; padding: 25px; border-radius: 12px;`;
+Wrap content in a double border: border: 4px double #ea580c; padding: 15px; border-radius: 12px;`;
 
 export const DEFAULT_STRICT_RULES: StrictRule[] = [
   {

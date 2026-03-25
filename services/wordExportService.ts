@@ -67,7 +67,7 @@ export const exportToWord = async (
     finalHtml += `
       <table border="0" cellspacing="0" cellpadding="0" width="100%" ${pageBreak}>
         <tr>
-          <td align="center" style="padding: 10pt 0;">
+          <td align="left" style="padding: 2pt 0;">
             ${el.outerHTML}
           </td>
         </tr>

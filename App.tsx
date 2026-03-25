@@ -665,8 +665,8 @@ ${componentLogic}
 
   const confirmExportWord = () => {
     const { filename, title } = exportSettings;
-    const logoHtml = brandSettings.logoData ? `<table style="width: 100%; border: none; margin-bottom: 8pt;"><tr><td style="border: none; text-align: center;"><img src="${brandSettings.logoData}" width="621" style="width: 16.43cm;" /></td></tr></table>` : '';
-    const header = `${logoHtml}<table style="width: 100%; border-bottom: 2pt solid black; margin-bottom: 15pt; font-family: 'Times New Roman', serif;"><tr><td style="border: none; width: 100%; text-align: right;"><b>${activeModule}: ${topic || 'Assessment'}</b><br/>${activeLevel} | ${activeLanguage}</td></tr></table>`;
+    const logoHtml = brandSettings.logoData ? `<table style="width: 100%; border: none; margin-bottom: 2pt;"><tr><td style="border: none; text-align: center;"><img src="${brandSettings.logoData}" width="621" style="width: 16.43cm;" /></td></tr></table>` : '';
+    const header = `${logoHtml}<table style="width: 100%; border-bottom: 2pt solid black; margin-bottom: 5pt; font-family: 'Times New Roman', serif;"><tr><td style="border: none; width: 100%; text-align: right;"><b>${activeModule}: ${topic || 'Assessment'}</b><br/>${activeLevel} | ${activeLanguage}</td></tr></table>`;
     
     // Prepend header to content as the new exportToWord only takes 2 arguments
     const fullContent = header + worksheetContent;
