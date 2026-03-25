@@ -15,40 +15,14 @@ export const THEMES: Theme[] = [
   { id: 'royal', name: 'Royal Blueprint', color: '#1e3a8a', bg: '#f8fafc', accent: '#3b82f6' },
   { id: 'forest', name: 'Forest Scholar', color: '#064e3b', bg: '#f0fdf4', accent: '#10b981' },
   { id: 'crimson', name: 'Crimson Archive', color: '#7f1d1d', bg: '#fef2f2', accent: '#ef4444' },
-  { id: 'midnight', name: 'Midnight Engine', color: '#1e293b', bg: '#0f172a', accent: '#6366f1' },
+  { id: 'midnight', name: 'Midnight Architect', color: '#1e293b', bg: '#0f172a', accent: '#6366f1' },
   { id: 'beach', name: 'Tropical Beach', color: '#0284c7', bg: 'linear-gradient(to bottom, #bae6fd, #fef3c7)', accent: '#0ea5e9' },
   { id: 'sunset', name: 'Sunset Horizon', color: '#9d174d', bg: 'linear-gradient(to top right, #fdf2f8, #fff7ed)', accent: '#db2777' },
   { id: 'nebula', name: 'Deep Nebula', color: '#7c3aed', bg: 'radial-gradient(circle at center, #2e1065, #0f172a)', accent: '#8b5cf6' },
   { id: 'zen', name: 'Zen Garden', color: '#4d7c0f', bg: '#f7fee7', accent: '#65a30d' },
 ];
 
-export const GLOBAL_STRICT_COMMAND = `### HUMAN-CENTERED ASSESSMENT FRAMEWORK ###
-Our goal is simple: students must think. The test must measure understanding, not pattern recognition or mechanical guessing. Every rule below exists to protect cognitive difficulty and prevent shortcut strategies.
-
-I. Cognitive Integrity Principles
-- No-Free-Verb Rule: In multiple-choice grammar questions, never place the main auxiliary or modal verb directly in the question stem if it reveals the structure being tested.
-- Situational Evidence Requirement: Grammar must be inferred from context, not obvious time markers such as yesterday, tomorrow, now, or at the moment.
-- Pure Vocabulary Control: In vocabulary sections, all answer choices must be the same part of speech and grammatical form.
-
-II. Structural & Positional Control
-- Floating Marker Principle: Do not place key grammar signals in the same position every time. Vary sentence structure so students cannot scan mechanically.
-- Syntactic Distance Strategy (Higher Levels): At advanced levels, separate the subject from the main verb using relative clauses or prepositional phrases.
-- Advanced Comparison Structures: Actively test less common but correct structures such as: "as good a student as", "of the two", "the more…, the more…", "not so much A as B".
-
-III. Reading & Meaning-Based Testing
-- Word Form Shift Rule: Reading questions must not repeat the exact wording from the text.
-- Pragmatic Boundary Testing: Distinguish between types of obligation and meaning in context.
-
-IV. Game & Activity Layouts
-- Hidden Object Quest: You MUST wrap the main image and the icons in a <div class="image-overlay-wrapper">. The icons MUST be placed inside a <div class="icons-footer"> so they appear on top of the image.
-- Word Search: You MUST use a standard <table> tag for the grid. Each cell MUST be a <td>.
-
-Core Philosophy
-We do not design tests that reward: scanning habits, grammar elimination tricks, position guessing, keyword matching.
-We design tests that measure: contextual reasoning, structural awareness, semantic judgment, flexible language control.
-Every item must require thought. If a student can answer without thinking deeply, the item must be redesigned.
-
-### NEURAL ARCHITECTURAL SPECIFICATION: ANTI-ROBOT PROTOCOL (MASTER RULES 1-42) ###
+export const GLOBAL_STRICT_COMMAND = `### NEURAL ARCHITECTURAL SPECIFICATION: ANTI-ROBOT PROTOCOL ###
 You are the "DPSS ULTIMATE TEST BUILDER" engine. Your primary objective is to destroy robotic testing patterns and enforce situational logic.
 
 1. [NO-FREE-VERB RULE]:
@@ -219,7 +193,7 @@ A. have to add          B. had to add          C. must add          D. has to ad
    - The footer must contain:
      1. A row of 3 large emojis (40pt).
      2. A randomized, inspiring personal development quote in italics.
-     3. The specific text: "Pre5-S2-20Copies-(Grammar)" in bold.
+     3. The specific text: "Pre5-Chanthy-S2-20Copies-(Grammar)" in bold.
    - Use HTML for styling: <div style="text-align: center; margin-top: 50px;">...</div>
 
 31. [COGNITIVE SCAFFOLDING]: You MUST arrange items in increasing order of difficulty. Items 1-3 should be "Confidence Builders" (clearer context). Items 4-8 should be "Standard Application". Items 9-10 should be "The Distinguishers" (testing rare nuances or complex sentence structures).
@@ -232,7 +206,19 @@ A. have to add          B. had to add          C. must add          D. has to ad
 39. [LEXICAL OVERLAP TRAP]: At least one distractor in Reading MCQs MUST use words that appear in the text but describe a different situation. This punishes students who simply "word-match" without reading.
 40. [THE GIST & DETAIL BALANCE]: Every reading test must include exactly one "Global" question (e.g., "What is the main purpose of this text?") and several "Local" questions (specific details).
 41. [GRAMMAR FOCUS RULE]: Distractors must belong to the same grammar system as the target structure unless the task specifically tests meaning differences between grammar systems.
-42. [TOPIC CONSISTENCY RULE (GLOBAL)]: All MCQ distractors should come from the same grammar system as the target structure. The goal is to test the specific grammar topic, not unrelated grammar areas. At least one distractor must be a "near-miss": a grammatically correct option that is slightly wrong in meaning or usage. Examples of grammar systems: - Must / Have to - Present Perfect - Conditionals - Comparatives - Articles - Prepositions - Passive Voice Students should choose the correct answer based on the target grammar rule, not by eliminating unrelated grammar forms. For examples, You ____ wear a helmet here. A. must wear          B. have to wear          C. must have          D. had to
+42. [TOPIC CONSISTENCY RULE (GLOBAL)]: All MCQ distractors should come from the same grammar system as the target structure. The goal is to test the specific grammar topic, not unrelated grammar areas. At least one distractor must be a "near-miss":
+   a grammatically correct option that is slightly wrong in meaning or usage.
+Examples of grammar systems:
+- Must / Have to
+- Present Perfect
+- Conditionals
+- Comparatives
+- Articles
+- Prepositions
+- Passive Voice
+Students should choose the correct answer based on the target grammar rule, not by eliminating unrelated grammar forms. For examples, 
+You ____ wear a helmet here.
+A. must wear          B. have to wear          C. must have          D. had to
 `;
 
 export const BORDER_FRAME_INSTRUCTION = `### STYLIST FRAME PROTOCOL ###
@@ -278,9 +264,7 @@ export const DEFAULT_STRICT_RULES: StrictRule[] = [
 ];
 
 export const DEFAULT_MASTER_PROTOCOLS: StrictRule[] = [
-  // --- MASTER TEST DESIGN PROTOCOLS (HUMAN-CENTERED ASSESSMENT FRAMEWORK) ---
-  { id: 'mp-philosophy', label: 'CORE PHILOSOPHY', description: 'Students must think deeply.', promptInjection: 'CORE PHILOSOPHY: We do not design tests that reward: scanning habits, grammar elimination tricks, position guessing, keyword matching. We design tests that measure: contextual reasoning, structural awareness, semantic judgment, flexible language control. Every item must require thought. If a student can answer without thinking deeply, the item must be redesigned.', active: true, priority: 'High', category: 'General' },
-  { id: 'mp-1', label: 'NO-FREE-VERB RULE', description: 'Prevents giving away the verb in the stem.', promptInjection: 'In multiple-choice grammar questions, never place the main auxiliary or modal verb directly in the question stem if it reveals the structure being tested. Weak design: "You must ____ a helmet." Stronger design: "You ____ a helmet." The second version forces students to decide between obligation, advice, or external rule (must wear, have to wear, should wear). They must process meaning, not just grammar form. FOR FILL-IN-THE-BLANK (Grammar Only): ALWAYS provide the base verb in parentheses AFTER the blank: "He ____ (go) to school."', active: true, priority: 'High', category: 'Grammar' },
+  { id: 'mp-1', label: 'NO-FREE-VERB RULE', description: 'Prevents giving away the verb in the stem.', promptInjection: 'In multiple-choice grammar questions, never place the main auxiliary or modal verb directly in the question stem if it reveals the structure being tested. Weak design: "You must ____ a helmet." Stronger design: "You ____ a helmet." The second version forces students to decide between obligation, advice, or external rule (must wear, have to wear, should wear). They must process meaning, not just grammar form.', active: true, priority: 'High', category: 'Grammar' },
   { id: 'mp-2', label: 'SITUATIONAL EVIDENCE REQUIREMENT', description: 'Forces inference from context, not time markers.', promptInjection: 'Grammar must be inferred from context, not obvious time markers such as yesterday, tomorrow, now, or at the moment. Weak design: "She ____ her homework yesterday." Stronger design: "Her notebook is closed. She ____ her homework." Students must infer completion from evidence, not from time words. This develops reasoning skills.', active: true, priority: 'High', category: 'Grammar' },
   { id: 'mp-3', label: 'HIGH-FIDELITY POOLING', description: '', promptInjection: 'For MCQ, generate at least one "Near-Miss" distractor: a grammatically correct option that is contextually inferior to the target (e.g., testing Must vs Have To nuance).', active: true, priority: 'Medium', category: 'General' },
   { id: 'mp-4', label: 'NUANCE-BASED CHALLENGE', description: '', promptInjection: 'If the topic involves similar structures (Must/Have to, Will/Going to, Say/Tell), the options MUST include correctly conjugated versions of both to test situational logic.', active: true, priority: 'High', category: 'Grammar' },
@@ -461,8 +445,8 @@ export const DEFAULT_MASTER_PROTOCOLS: StrictRule[] = [
     label: 'BALANCED COLUMN DISTRIBUTION',
     description: 'Ensures items are split evenly in 2-column layouts.',
     promptInjection: 'STRICT COLUMN BALANCE: If a section uses a 2-column layout, you MUST distribute items evenly (e.g., 10 items = 5 in Col 1, 5 in Col 2). NEVER leave a column empty or significantly unbalanced.',
-    active: true, 
-    priority: 'High', 
+    active: true,
+    priority: 'High',
     category: 'General'
   },
   {
@@ -591,20 +575,60 @@ export const DEFAULT_MASTER_PROTOCOLS: StrictRule[] = [
     priority: 'High',
     category: 'Grammar'
   },
-  { 
-    id: 'mp-42', 
-    label: 'TOPIC CONSISTENCY RULE (GLOBAL)', 
-    description: 'Full grammar system consistency.', 
-    promptInjection: 'All MCQ distractors should come from the same grammar system as the target structure. The goal is to test the specific grammar topic, not unrelated grammar areas. At least one distractor must be a "near-miss": a grammatically correct option that is slightly wrong in meaning or usage. Examples of grammar systems: - Must / Have to - Present Perfect - Conditionals - Comparatives - Articles - Prepositions - Passive Voice Students should choose the correct answer based on the target grammar rule, not by eliminating unrelated grammar forms. For examples, You ____ wear a helmet here. A. must wear          B. have to wear          C. must have          D. had to', 
-    active: true, 
-    priority: 'High', 
-    category: 'Grammar' 
+  {
+    id: 'mp-human-like-design',
+    label: 'HUMAN-LIKE TEST DESIGN',
+    description: 'Enforces professional exam design principles.',
+    promptInjection: `SYSTEM RULE: HUMAN-LIKE TEST DESIGN
+When generating grammar exercises:
+1. All answer choices must be grammatically possible.
+2. Do NOT create obviously wrong options (e.g., "must to be", "has be", "musts be").
+3. Distractors must be plausible and related to the target grammar.
+4. Include at least one "near-miss distractor" that is grammatically correct but contextually weaker.
+5. Avoid answer choices unrelated to the grammar topic.
+Example: Topic: Must vs Have to
+Good options: A. must wear B. have to wear C. must stay D. have to remain
+Bad options: A. must to wear B. musts wear C. has wear D. wear must
+6. Questions must test meaning, context, or nuance, not simple grammar recognition.
+7. Distractors should reflect common learner mistakes.
+8. Maintain balanced answer keys (A, B, C, D).
+9. Avoid predictable patterns in answers.
+10. All exercises should resemble professional exams such as Cambridge, IELTS, or TOEFL.`,
+    active: true,
+    priority: 'High',
+    category: 'Grammar'
   }
 ];
 
 export const INITIAL_TEMPLATES: InstructionTemplate[] = [
   // --- FULL TEST COMBINATIONS ---
   { id: 'g_full_mastery', category: 'GRAMMAR', label: 'FULL GRAMMAR TEST', prompt: 'PART: FULL GRAMMAR TEST. Generate a 4-part test. ITEM COUNT: Generate exactly {{COUNT}} items for EACH part. NUMBERING: Number every single item in each part starting from 1. PARTS: 1. Write C (correct) or I (incorrect), 2. MCQ, 3. Circle the correct answers, 4. Double-Gap MCQ. Apply NO-FREE-VERB mandate.', columnCount: 0 },
+  { 
+    id: 'g_full_test', 
+    category: 'GRAMMAR', 
+    label: 'Grammar Full Test', 
+    prompt: `PART: Grammar Full Test. 
+Section I: Individual Grammar
+A. Circle the correct option (15 items)
+B. Mark sentences C (Correct) or I (Incorrect) (20 items)
+C. Write correct word form (13 underscores + base verb) (10 items)
+D. Write negative + question forms (2 sentences)
+E. MCQ: Choose the best options, A, B, C or D. (10 items)
+
+Section II: Mixed Grammar
+A. Find & correct 10 mistakes. (not topic-based)
+B. Choose best option (mixed grammar) (10 items)
+C. Double-gap MCQ (not topic-based) (10 items)
+D. Teacher Mode (Error Correction: 1 paragraph with 5 errors, Students rewrite below) (not topic-based)
+
+MCQ Format: 
+- Put all 4 options on ONE single line if the answer choices are short. Layout: 7 spaces before A., 15 spaces between options. Example: A. Option One B. Option Two C. Option Three D. Option Four
+- Format: Put all 4 options on Doubles line if the answer choices are long. A. long Option C. long Option B. long Option D. A. long Option
+
+Answer Key choices appear Randomly for balanced answer keys (4 As, 6 Bs, 5 Cs, 5Ds).
+- Layout: 7 spaces before A., 15 spaces between options.`, 
+    columnCount: 0 
+  },
   { id: 'v_full_mastery', category: 'VOCABULARY', label: 'FULL VOCABULARY TEST', prompt: 'PART: FULL VOCABULARY TEST. Generate a 4-part test. ITEM COUNT: Generate exactly {{COUNT}} items for EACH part. NUMBERING: Number every single item in each part starting from 1. PARTS: 1. MATCHING, 2. TRUE/FALSE (Definition-based), 3. MCQ, 4. SPEAKING Practice. Apply Pure Vocabulary Firewall. STRICT: NO Reading passages.', columnCount: 0 },
   { id: 'r_full_mastery', category: 'READING', label: 'FULL READING TEST', prompt: 'PART: FULL READING TEST. Generate a 6-part test. ITEM COUNT: Generate exactly {{COUNT}} items for EACH part. NUMBERING: Number every single item in each part starting from 1. PARTS: 1. Reading MCQ, 2. WRITE NO MORE THAN TWO WORDS or/and Number, 3. MCQ, 4. Inferential Comprehension, 5. MATCHING HEADING, 6. TRUE/FALSE/NOT GIVEN. Apply Reading Logic Firewall.', columnCount: 0 },
 
@@ -673,7 +697,5 @@ export const INITIAL_TEMPLATES: InstructionTemplate[] = [
   { id: 'v_synonyms', category: 'VOCABULARY', label: 'SYNONYMS', prompt: 'SYNONYMS WRITING \nWrite the following synonyms\n5 columns: 1 vocabulary, 2 synonym 1, 3, syn 2, ....\nIf there are more than 5 synonyms, please have another row.', columnCount: 5 },
   { id: 'v_synonym_writing', category: 'VOCABULARY', label: 'SYNONYM WRITING', prompt: 'SYNONYM WRITING \nWrite the following synonyms\n5 columns: 1 vocabulary, 2 synonym 1, 3, syn 2, ....\nIf there are more than 5 synonyms, please have another row.', columnCount: 5 },
   { id: 'v_circle', category: 'VOCABULARY', label: 'CIRCLE THE CORRECT WORD', prompt: 'CIRLCE: \nCircle the Correct Word', columnCount: 0 },
-  { id: 'v_cloze', category: 'VOCABULARY', label: 'CLOZE PASSAGE', prompt: 'CLOZE PASSAGE\nCloze Passage', columnCount: 0 },
-  { id: 'k_hidden_object', category: 'KIDS', label: 'HIDDEN OBJECT QUEST', prompt: 'PART: HIDDEN OBJECT QUEST. Generate a Hidden Object game about {{TOPIC}}. You MUST wrap the main image and the icons in a <div class="image-overlay-wrapper">. The icons MUST be placed inside a <div class="icons-footer"> so they appear on top of the image. Use high-quality image descriptions.', columnCount: 0 },
-  { id: 'k_word_search', category: 'KIDS', label: 'WORD SEARCH', prompt: 'PART: WORD SEARCH. Generate a Word Search puzzle about {{TOPIC}}. You MUST use a standard <table> tag for the grid. Each cell MUST be a <td>. Ensure the grid is perfectly square (e.g., 10x10).', columnCount: 0 }
+  { id: 'v_cloze', category: 'VOCABULARY', label: 'CLOZE PASSAGE', prompt: 'CLOZE PASSAGE\nCloze Passage', columnCount: 0 }
 ];
