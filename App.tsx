@@ -136,7 +136,7 @@ function App() {
       setIsBrandLoaded(false);
       loadedEmailRef.current = null;
 
-      if (session?.email) {
+      if (session?.email && db) {
         try {
           const docRef = doc(db, 'user_settings', session.email);
           const docSnap = await getDoc(docRef);
@@ -165,27 +165,29 @@ function App() {
   });
 
   const fetchCloudHistory = async (email: string) => {
-    try {
-      const q = query(
-        collection(db, 'generatedTests'),
-        where('authorEmail', '==', email)
-      );
-      const querySnapshot = await getDocs(q);
-      const cloudHistory: HistoryItem[] = [];
-      querySnapshot.forEach((doc) => {
-        cloudHistory.push(doc.data() as HistoryItem);
-      });
-      
-      // Sort in memory to avoid composite index requirement
-      const sortedHistory = cloudHistory
-        .sort((a, b) => b.timestamp - a.timestamp)
-        .slice(0, 30);
+    if (email && db) {
+      try {
+        const q = query(
+          collection(db, 'generatedTests'),
+          where('authorEmail', '==', email)
+        );
+        const querySnapshot = await getDocs(q);
+        const cloudHistory: HistoryItem[] = [];
+        querySnapshot.forEach((doc) => {
+          cloudHistory.push(doc.data() as HistoryItem);
+        });
+        
+        // Sort in memory to avoid composite index requirement
+        const sortedHistory = cloudHistory
+          .sort((a, b) => b.timestamp - a.timestamp)
+          .slice(0, 30);
 
-      if (sortedHistory.length > 0) {
-        setHistory(sortedHistory);
+        if (sortedHistory.length > 0) {
+          setHistory(sortedHistory);
+        }
+      } catch (e) {
+        console.error("Error fetching cloud history:", e);
       }
-    } catch (e) {
-      console.error("Error fetching cloud history:", e);
     }
   };
 
@@ -296,7 +298,7 @@ function App() {
     // Persist brand settings to Firestore
     const persistBrandSettings = async () => {
       // Only save if we are logged in AND the current user's data has been loaded
-      if (session?.email && isBrandLoaded && loadedEmailRef.current === session.email) {
+      if (session?.email && isBrandLoaded && loadedEmailRef.current === session.email && db) {
         try {
           const docRef = doc(db, 'user_settings', session.email);
           await setDoc(docRef, { brandSettings }, { merge: true });
@@ -628,13 +630,15 @@ ${componentLogic}
       setHistory(prev => [newTestItem, ...prev].slice(0, 30));
 
       // 4. SEND TO THE CLOUD (The Magic Step!)
-      try {
-           // This line sends the data to a collection named 'generatedTests' in your Firebase database
-           await addDoc(collection(db, 'generatedTests'), newTestItem);
-           console.log("✅☁️ Test successfully saved to the Firebase Cloud Notebook!");
-      } catch (e) {
-           // If something goes wrong, tell the console
-           console.error("❌☁️ Error saving to cloud notebook:", e);
+      if (db) {
+        try {
+             // This line sends the data to a collection named 'generatedTests' in your Firebase database
+             await addDoc(collection(db, 'generatedTests'), newTestItem);
+             console.log("✅☁️ Test successfully saved to the Firebase Cloud Notebook!");
+        } catch (e) {
+             // If something goes wrong, tell the console
+             console.error("❌☁️ Error saving to cloud notebook:", e);
+        }
       }
     } catch (error: any) {
       console.error("Generation failed:", error);
@@ -688,7 +692,7 @@ ${componentLogic}
       fullContent, 
       filename || `DPSS_Test_${activeLanguage}_${activeLevel}`,
       '',
-      '0.6cm',
+      '0.9in',
       font
     );
     
