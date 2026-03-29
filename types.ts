@@ -93,6 +93,7 @@ export interface BrandSettings {
   logoWidth: number;
   logoData?: string;
   activeFont?: string;
+  randomizeFont?: boolean;
 }
 
 export interface UserSession {

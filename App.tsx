@@ -47,7 +47,8 @@ const DEFAULT_BRAND_SETTINGS: BrandSettings = {
   logos: Array(30).fill(undefined),
   logoWidth: 300,
   logoData: undefined,
-  activeFont: 'Times New Roman'
+  activeFont: 'Times New Roman',
+  randomizeFont: true
 };
 
 const DEFAULT_SESSION: UserSession = {
@@ -168,14 +169,18 @@ function App() {
     }
   };
 
+  const [isFirebaseConnected, setIsFirebaseConnected] = useState(true);
+
   // Validate connection to Firestore
   useEffect(() => {
     const testConnection = async () => {
       try {
         await getDocFromServer(doc(db, 'test', 'connection'));
+        setIsFirebaseConnected(true);
       } catch (error) {
         if (error instanceof Error && error.message.includes('the client is offline')) {
           console.error("Please check your Firebase configuration. The client is offline.");
+          setIsFirebaseConnected(false);
         }
       }
     };
@@ -624,6 +629,8 @@ ${rulesPrompt}
 [TARGET LEVEL]: ${activeLevel}
 [LANGUAGE]: ${activeLanguage}
 
+[HEADER RULE]: You are strictly FORBIDDEN from generating a title, school name, or metadata header. The application provides this automatically. Start immediately with the first instruction.
+
 ### MANDATORY SEQUENCE ###
 ${mandatorySequence}
 
@@ -638,10 +645,12 @@ ${componentLogic}
         setBrandSettings(prev => ({ ...prev, logoData: randomLogo }));
       }
 
-      // Randomize Font between Times New Roman and Garamond
-      const fonts = ['Times New Roman', 'Garamond'];
-      const randomFont = fonts[Math.floor(Math.random() * fonts.length)];
-      setBrandSettings(prev => ({ ...prev, activeFont: randomFont }));
+      // Randomize Font between Times New Roman and Garamond if enabled
+      if (brandSettings.randomizeFont) {
+        const fonts = ['Times New Roman', 'Garamond'];
+        const randomFont = fonts[Math.floor(Math.random() * fonts.length)];
+        setBrandSettings(prev => ({ ...prev, activeFont: randomFont }));
+      }
 
       // FIREBASE CLOUD SAVE IMPLEMENTATION
       // ==================================================
@@ -724,13 +733,11 @@ ${componentLogic}
     const logoHtml = brandSettings.logoData ? `<table style="width: 100%; border: none; margin-bottom: 2pt;"><tr><td style="border: none; text-align: center;"><img src="${brandSettings.logoData}" width="621" style="width: 16.43cm;" /></td></tr></table>` : '';
     const header = `${logoHtml}<table style="width: 100%; border-bottom: 2pt solid black; margin-bottom: 5pt; font-family: '${brandSettings.activeFont || 'Times New Roman'}', serif;"><tr><td style="border: none; width: 100%; text-align: right;"><b>${activeModule}: ${topic || 'Assessment'}</b><br/>${activeLevel} | ${activeLanguage}</td></tr></table>`;
     
-    // Prepend header to content as the new exportToWord only takes 2 arguments
-    const fullContent = header + worksheetContent;
-    
+    // Use the headerHtml argument correctly
     exportToWord(
-      fullContent, 
+      worksheetContent, 
       filename || `DPSS_Test_${activeLanguage}_${activeLevel}`,
-      '',
+      header,
       '0.8in',
       brandSettings.activeFont || 'Times New Roman',
       '1.15'
@@ -1286,6 +1293,23 @@ ${componentLogic}
                     <h3 className="text-[13px] font-black text-slate-900 uppercase tracking-widest">Typography & Layout</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                       <div className="space-y-6">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Primary Font</label>
+                        <div className="flex bg-slate-100 p-1.5 rounded-2xl gap-1">
+                          {['Times New Roman', 'Garamond'].map(font => (
+                            <button key={font} onClick={() => setBrandSettings({ ...brandSettings, activeFont: font })} className={`flex-1 py-2 rounded-xl text-[10px] font-black transition-all ${brandSettings.activeFont === font ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400'}`}>{font}</button>
+                          ))}
+                        </div>
+                        <div className="flex items-center justify-between px-2">
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Randomize on Generate</span>
+                          <button 
+                            onClick={() => setBrandSettings({ ...brandSettings, randomizeFont: !brandSettings.randomizeFont })}
+                            className={`w-12 h-6 rounded-full transition-all relative ${brandSettings.randomizeFont ? 'bg-orange-600' : 'bg-slate-200'}`}
+                          >
+                            <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${brandSettings.randomizeFont ? 'left-7' : 'left-1'}`}></div>
+                          </button>
+                        </div>
+                      </div>
+                      <div className="space-y-6">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Font Size (px)</label>
                         <div className="flex items-center gap-4">
                           <input type="range" min="8" max="24" value={brandSettings.fontSize} onChange={e => setBrandSettings({ ...brandSettings, fontSize: parseInt(e.target.value) })} className="flex-1 accent-orange-600" />
@@ -1495,6 +1519,19 @@ ${componentLogic}
                 )}
                 {settingsTab === 'CLOUD SYNC' && (
                   <div className="space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-700">
+                    {!isFirebaseConnected && (
+                      <div className="bg-rose-50 border border-rose-100 p-8 rounded-[32px] space-y-4">
+                        <div className="flex items-center gap-4 text-rose-600">
+                          <i className="fa-solid fa-triangle-exclamation text-2xl"></i>
+                          <h4 className="font-black uppercase tracking-widest text-sm">Cloud Connection Error</h4>
+                        </div>
+                        <p className="text-rose-500 text-[11px] font-bold leading-relaxed">
+                          Your application is unable to connect to the Firebase cloud. This usually happens if you haven't set up your environment variables (like GEMINI_API_KEY or Firebase config) on your hosting provider (e.g., Vercel).
+                          <br/><br/>
+                          If you are seeing this on a published site, please ensure you have copied the <code className="bg-rose-100 px-2 py-0.5 rounded">firebase-applet-config.json</code> values to your environment.
+                        </p>
+                      </div>
+                    )}
                     <div className="bg-white p-10 rounded-[48px] border border-slate-100 shadow-sm space-y-8">
                       <div className="flex items-center gap-6">
                         <div className="h-16 w-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 text-2xl">

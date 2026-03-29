@@ -67,9 +67,9 @@ export const exportToWord = async (
     const pageBreak = isNewSet && i > 0 ? 'style="page-break-before:always"' : '';
     
     finalHtml += `
-      <table border="0" cellspacing="0" cellpadding="0" width="100%" ${pageBreak}>
+      <table border="0" cellspacing="0" cellpadding="0" width="100%" ${pageBreak} style="margin: 0; padding: 0; border-collapse: collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;">
         <tr>
-          <td align="left" style="padding: 2pt 0; font-family: '${fontFamily}', serif; font-size: 12pt; line-height: ${lineHeight};">
+          <td align="left" style="padding: 0; margin: 0; font-family: '${fontFamily}', serif; font-size: 12pt; line-height: ${lineHeight}; mso-line-height-rule: exactly;">
             ${el.outerHTML}
           </td>
         </tr>

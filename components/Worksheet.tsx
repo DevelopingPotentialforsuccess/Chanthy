@@ -64,7 +64,7 @@ const Worksheet: React.FC<WorksheetProps> = ({
           }
         `}</style>
         
-        <div className="worksheet-page bg-white min-h-[297mm] p-[0.8in] relative rounded-sm border border-slate-300"
+        <div className="worksheet-page prose bg-white min-h-[297mm] p-[0.8in] relative rounded-sm border border-slate-300"
              contentEditable={!isGenerating}
              onInput={(e) => onContentChange(e.currentTarget.innerHTML)}
              dangerouslySetInnerHTML={{ __html: content || placeholderHtml }}
