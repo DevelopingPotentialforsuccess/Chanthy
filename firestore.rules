@@ -42,19 +42,21 @@ service cloud.firestore {
     // ===============================================================
     
     function isAuthenticated() {
-      return true; // Authentication removed as per user request
+      return request.auth != null;
     }
 
     function isEmailOwner(email) {
-      return true; // Authentication removed as per user request
+      return isAuthenticated() && request.auth.token.email == email;
     }
 
     function isAdmin() {
-      // Keep admin check for the specific email if they happen to be signed in, 
-      // but generally we are allowing public access now.
-      return request.auth != null &&
+      return isAuthenticated() &&
         (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
           (request.auth.token.email == "sekchanthyoptimize@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isPublicUser(email) {
+      return email == "public@dpss.edu";
     }
 
     function hasOnlyAllowedFields(fields) {
@@ -83,15 +85,17 @@ service cloud.firestore {
     // ===============================================================
 
     match /allowed_users/{email} {
-      allow read, write: if true;
+      allow read, write: if isEmailOwner(email) || isAdmin() || isPublicUser(email);
     }
 
     match /user_settings/{email} {
-      allow read, write: if true;
+      allow read, write: if isEmailOwner(email) || isAdmin() || isPublicUser(email);
     }
 
     match /generatedTests/{testId} {
-      allow read, write: if true;
+      allow read: if true; // Allow public reading of tests
+      allow create: if isAuthenticated() || isPublicUser(request.resource.data.authorEmail);
+      allow update, delete: if isAdmin() || (isAuthenticated() && request.auth.token.email == resource.data.authorEmail) || isPublicUser(resource.data.authorEmail);
     }
 
     // Default deny

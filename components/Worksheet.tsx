@@ -51,18 +51,20 @@ const Worksheet: React.FC<WorksheetProps> = ({
       <div className="max-w-[210mm] mx-auto pb-64 shadow-2xl worksheet-paper">
         <style>{`
           .prose { 
-            font-family: '${brandSettings.fontFamily || 'Times New Roman'}', Times, serif !important; 
+            font-family: '${brandSettings.activeFont || 'Times New Roman'}', serif !important; 
             font-size: ${brandSettings.fontSize || 12}pt !important; 
+            line-height: 1.15 !important;
           }
           .prose table { border-collapse: collapse !important; width: 100% !important; border: 1.5pt solid black !important; table-layout: fixed; }
           .prose th, .prose td { border: 1pt solid black !important; padding: 6pt !important; vertical-align: top !important; }
+          .prose .header-row, .prose tr:first-child td[colspan] { background-color: #334155 !important; color: white !important; text-align: center !important; font-weight: bold !important; padding: 10px !important; }
           @media print {
             .no-print { display: none !important; }
             .bg-white { background-color: white !important; }
           }
         `}</style>
         
-        <div className="worksheet-page bg-white min-h-[297mm] p-[0.7in] relative rounded-sm border border-slate-300"
+        <div className="worksheet-page bg-white min-h-[297mm] p-[0.8in] relative rounded-sm border border-slate-300"
              contentEditable={!isGenerating}
              onInput={(e) => onContentChange(e.currentTarget.innerHTML)}
              dangerouslySetInnerHTML={{ __html: content || placeholderHtml }}

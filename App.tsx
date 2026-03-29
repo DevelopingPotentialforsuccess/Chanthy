@@ -26,8 +26,9 @@ import {
 } from './constants';
 
 // --- THE NEW FIREBASE MAGIC ---
-import { db } from './firebase';
-import { collection, addDoc, doc, getDoc, setDoc, updateDoc, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
+import { db, auth, googleProvider } from './firebase';
+import { collection, addDoc, doc, getDoc, setDoc, updateDoc, query, where, getDocs, orderBy, limit, getDocFromServer } from 'firebase/firestore';
+import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
 // ------------------------------
 
 import { callNeuralEngine } from './services/neuralService';
@@ -46,7 +47,7 @@ const DEFAULT_BRAND_SETTINGS: BrandSettings = {
   logos: Array(30).fill(undefined),
   logoWidth: 300,
   logoData: undefined,
-  fontFamily: 'Times New Roman'
+  activeFont: 'Times New Roman'
 };
 
 const DEFAULT_SESSION: UserSession = {
@@ -129,6 +130,58 @@ function App() {
   const [isBrandLoaded, setIsBrandLoaded] = useState(false);
   const loadedEmailRef = useRef<string | null>(null);
 
+  // Firebase Auth Listener
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setSession({
+          name: user.displayName || 'User',
+          email: user.email || '',
+          code: 'dpss',
+          loginTime: Date.now()
+        });
+      } else {
+        setSession(DEFAULT_SESSION);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleGoogleLogin = async () => {
+    try {
+      setAuthLoading(true);
+      await signInWithPopup(auth, googleProvider);
+    } catch (error) {
+      console.error("Login failed:", error);
+      alert("Login failed. Please try again.");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setSession(DEFAULT_SESSION);
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
+  // Validate connection to Firestore
+  useEffect(() => {
+    const testConnection = async () => {
+      try {
+        await getDocFromServer(doc(db, 'test', 'connection'));
+      } catch (error) {
+        if (error instanceof Error && error.message.includes('the client is offline')) {
+          console.error("Please check your Firebase configuration. The client is offline.");
+        }
+      }
+    };
+    testConnection();
+  }, []);
+
   // Fetch brand settings from Firestore on login
   useEffect(() => {
     const fetchBrandSettings = async () => {
@@ -136,7 +189,7 @@ function App() {
       setIsBrandLoaded(false);
       loadedEmailRef.current = null;
 
-      if (session?.email && db) {
+      if (session?.email) {
         try {
           const docRef = doc(db, 'user_settings', session.email);
           const docSnap = await getDoc(docRef);
@@ -146,7 +199,7 @@ function App() {
           // Mark this email as loaded
           loadedEmailRef.current = session.email;
         } catch (e) {
-          console.error("Error fetching brand settings:", e);
+          handleFirestoreError(e, 'get' as any, `user_settings/${session.email}`);
         } finally {
           setIsBrandLoaded(true);
         }
@@ -165,29 +218,27 @@ function App() {
   });
 
   const fetchCloudHistory = async (email: string) => {
-    if (email && db) {
-      try {
-        const q = query(
-          collection(db, 'generatedTests'),
-          where('authorEmail', '==', email)
-        );
-        const querySnapshot = await getDocs(q);
-        const cloudHistory: HistoryItem[] = [];
-        querySnapshot.forEach((doc) => {
-          cloudHistory.push(doc.data() as HistoryItem);
-        });
-        
-        // Sort in memory to avoid composite index requirement
-        const sortedHistory = cloudHistory
-          .sort((a, b) => b.timestamp - a.timestamp)
-          .slice(0, 30);
+    try {
+      const q = query(
+        collection(db, 'generatedTests'),
+        where('authorEmail', '==', email)
+      );
+      const querySnapshot = await getDocs(q);
+      const cloudHistory: HistoryItem[] = [];
+      querySnapshot.forEach((doc) => {
+        cloudHistory.push(doc.data() as HistoryItem);
+      });
+      
+      // Sort in memory to avoid composite index requirement
+      const sortedHistory = cloudHistory
+        .sort((a, b) => b.timestamp - a.timestamp)
+        .slice(0, 30);
 
-        if (sortedHistory.length > 0) {
-          setHistory(sortedHistory);
-        }
-      } catch (e) {
-        console.error("Error fetching cloud history:", e);
+      if (sortedHistory.length > 0) {
+        setHistory(sortedHistory);
       }
+    } catch (e) {
+      handleFirestoreError(e, 'list' as any, 'generatedTests');
     }
   };
 
@@ -298,12 +349,12 @@ function App() {
     // Persist brand settings to Firestore
     const persistBrandSettings = async () => {
       // Only save if we are logged in AND the current user's data has been loaded
-      if (session?.email && isBrandLoaded && loadedEmailRef.current === session.email && db) {
+      if (session?.email && isBrandLoaded && loadedEmailRef.current === session.email) {
         try {
           const docRef = doc(db, 'user_settings', session.email);
           await setDoc(docRef, { brandSettings }, { merge: true });
         } catch (e) {
-          console.error("Error persisting brand settings:", e);
+          handleFirestoreError(e, 'write' as any, `user_settings/${session.email}`);
           // Alert user if save fails, likely due to size
           if (e instanceof Error && e.message.includes('too large')) {
              alert("CRITICAL: Your logo collection is too large to save to the cloud. Please delete some logos or use smaller images.");
@@ -367,14 +418,6 @@ function App() {
     return priorities[(currentIndex + 1) % priorities.length];
   };
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-  };
-
-  const handleLogout = () => {
-    // No-op as sign-in is removed
-  };
-  
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);
     localStorage.setItem(ONBOARDING_KEY, 'completed');
@@ -540,7 +583,12 @@ function App() {
 
       // ONLY add table instruction if columns are explicitly requested (> 0)
       const formatInstruction = overrideCol > 0 
-        ? `(FORMAT: HTML <table> with ${overrideCol} columns. Ensure items are distributed evenly.)` 
+        ? `(MANDATORY FORMAT: Use a real HTML <table> with ${overrideCol} columns. 
+            - The first row MUST be a header row spanning all ${overrideCol} columns (colspan="${overrideCol}").
+            - The header row MUST have the class "header-row" and background-color: #334155; color: white; text-align: center; font-weight: bold; padding: 10px; for the title "PART ${String.fromCharCode(65 + idx)}: ${t.label}".
+            - Distribute the ${overrideItems} items evenly across the ${overrideCol} columns.
+            - Every <td> MUST have a border: 1px solid #334155; padding: 10px; vertical-align: top;
+            - Ensure the table looks exactly like a professional worksheet grid with real columns.)` 
         : `(FORMAT: Standard numbered list. DO NOT use tables or columns.)`;
         
       return `PART ${String.fromCharCode(65 + idx)} [MANDATORY INSTRUCTION HEADER: ${t.label}]: ${t.prompt.replace(/{{BLANK}}/g, selectedBlankStyle)} (GENERATE EXACTLY ${overrideItems} ITEMS) (USE THIS ANSWER KEY: ${blueprintStr}) ${formatInstruction}`;
@@ -583,23 +631,17 @@ ${componentLogic}
     `;
     
     try {
-      // Randomize font from the 3 requested fonts
-      const fonts = ['Times New Roman', 'Comic Sans MS', 'Garamond'];
-      const randomFont = fonts[Math.floor(Math.random() * fonts.length)];
-      
       // Randomize logo from available logos
       const availableLogos = brandSettings.logos.filter(l => !!l);
-      let selectedLogo = brandSettings.logoData;
       if (availableLogos.length > 0) {
-        selectedLogo = availableLogos[Math.floor(Math.random() * availableLogos.length)];
+        const randomLogo = availableLogos[Math.floor(Math.random() * availableLogos.length)];
+        setBrandSettings(prev => ({ ...prev, logoData: randomLogo }));
       }
 
-      setBrandSettings(prev => ({ 
-        ...prev, 
-        logoData: selectedLogo,
-        fontFamily: randomFont,
-        fontSize: 12 // Ensure font size is 12 as requested
-      }));
+      // Randomize Font between Times New Roman and Garamond
+      const fonts = ['Times New Roman', 'Garamond'];
+      const randomFont = fonts[Math.floor(Math.random() * fonts.length)];
+      setBrandSettings(prev => ({ ...prev, activeFont: randomFont }));
 
       // FIREBASE CLOUD SAVE IMPLEMENTATION
       // ==================================================
@@ -630,15 +672,13 @@ ${componentLogic}
       setHistory(prev => [newTestItem, ...prev].slice(0, 30));
 
       // 4. SEND TO THE CLOUD (The Magic Step!)
-      if (db) {
-        try {
-             // This line sends the data to a collection named 'generatedTests' in your Firebase database
-             await addDoc(collection(db, 'generatedTests'), newTestItem);
-             console.log("✅☁️ Test successfully saved to the Firebase Cloud Notebook!");
-        } catch (e) {
-             // If something goes wrong, tell the console
-             console.error("❌☁️ Error saving to cloud notebook:", e);
-        }
+      try {
+           // This line sends the data to a collection named 'generatedTests' in your Firebase database
+           await addDoc(collection(db, 'generatedTests'), newTestItem);
+           console.log("✅☁️ Test successfully saved to the Firebase Cloud Notebook!");
+      } catch (e) {
+           // If something goes wrong, tell the console
+           handleFirestoreError(e, 'create' as any, 'generatedTests');
       }
     } catch (error: any) {
       console.error("Generation failed:", error);
@@ -681,9 +721,8 @@ ${componentLogic}
 
   const confirmExportWord = () => {
     const { filename, title } = exportSettings;
-    const font = brandSettings.fontFamily || 'Times New Roman';
     const logoHtml = brandSettings.logoData ? `<table style="width: 100%; border: none; margin-bottom: 2pt;"><tr><td style="border: none; text-align: center;"><img src="${brandSettings.logoData}" width="621" style="width: 16.43cm;" /></td></tr></table>` : '';
-    const header = `${logoHtml}<table style="width: 100%; border-bottom: 2pt solid black; margin-bottom: 5pt; font-family: '${font}', serif;"><tr><td style="border: none; width: 100%; text-align: right;"><b>${activeModule}: ${topic || 'Assessment'}</b><br/>${activeLevel} | ${activeLanguage}</td></tr></table>`;
+    const header = `${logoHtml}<table style="width: 100%; border-bottom: 2pt solid black; margin-bottom: 5pt; font-family: '${brandSettings.activeFont || 'Times New Roman'}', serif;"><tr><td style="border: none; width: 100%; text-align: right;"><b>${activeModule}: ${topic || 'Assessment'}</b><br/>${activeLevel} | ${activeLanguage}</td></tr></table>`;
     
     // Prepend header to content as the new exportToWord only takes 2 arguments
     const fullContent = header + worksheetContent;
@@ -692,8 +731,9 @@ ${componentLogic}
       fullContent, 
       filename || `DPSS_Test_${activeLanguage}_${activeLevel}`,
       '',
-      '0.9in',
-      font
+      '0.8in',
+      brandSettings.activeFont || 'Times New Roman',
+      '1.15'
     );
     
     setExportSettings(prev => ({ ...prev, showModal: false }));
@@ -748,6 +788,29 @@ ${componentLogic}
     setExpandedTemplateId(newId);
   };
 
+  const handleFirestoreError = (error: any, operationType: 'create' | 'update' | 'delete' | 'list' | 'get' | 'write', path: string | null) => {
+    const errInfo = {
+      error: error instanceof Error ? error.message : String(error),
+      authInfo: {
+        userId: auth.currentUser?.uid,
+        email: auth.currentUser?.email,
+        emailVerified: auth.currentUser?.emailVerified,
+        isAnonymous: auth.currentUser?.isAnonymous,
+        tenantId: auth.currentUser?.tenantId,
+        providerInfo: auth.currentUser?.providerData.map(provider => ({
+          providerId: provider.providerId,
+          displayName: provider.displayName,
+          email: provider.email,
+          photoUrl: provider.photoURL
+        })) || []
+      },
+      operationType,
+      path
+    };
+    console.error('Firestore Error: ', JSON.stringify(errInfo));
+    // We don't necessarily want to throw and crash the app, but we want the agent to see it
+  };
+
   return (
     <div className="flex h-screen overflow-hidden text-slate-300 relative transition-all duration-500">
       {showOnboarding && <OnboardingTutorial onComplete={handleOnboardingComplete} />}
@@ -759,6 +822,12 @@ ${componentLogic}
                {history.map(item => (<button key={item.id} onClick={() => { setWorksheetContent(item.content); setViewMode('preview'); }} className="w-full text-left p-4 rounded-2xl bg-[#111827] border border-[#1f2937] hover:border-orange-500/30 transition-all"><div className="text-[8px] text-slate-600 font-black uppercase mb-1">{new Date(item.timestamp).toLocaleDateString()}</div><div className="text-[11px] font-bold text-slate-400 line-clamp-1">{item.title}</div></button>))}
             </div>
               <div className="p-6 border-t border-[#1f2937] space-y-2">
+              {(!session?.email || session.email === 'public@dpss.edu') && (
+                <button onClick={() => { setShowSettings(true); setSettingsTab('CLOUD SYNC'); }} className="w-full flex items-center justify-between p-4 rounded-2xl bg-orange-600/10 border border-orange-600/20 text-orange-500 text-[9px] font-black uppercase hover:bg-orange-600/20 transition-all">
+                  <span>Cloud Login</span>
+                  <i className="fa-solid fa-cloud"></i>
+                </button>
+              )}
               <button onClick={() => setShowOnboarding(true)} className="w-full flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/10 text-slate-400 text-[9px] font-black uppercase hover:bg-white/10 transition-all"><span>Restart Tutorial</span><i className="fa-solid fa-circle-question"></i></button>
               <button onClick={() => setShowSettings(true)} className="w-full flex items-center justify-between p-5 rounded-2xl bg-gradient-to-r from-accent-orange-dark to-accent-orange-light text-white shadow-lg uppercase text-[11px] font-black hover:brightness-110 transition-all"><span>Workspace Settings</span><i className="fa-solid fa-gear"></i></button>
             </div>
@@ -1084,7 +1153,7 @@ ${componentLogic}
         <div className="fixed inset-0 z-[250] bg-slate-950/80 backdrop-blur-2xl flex items-center justify-center p-4">
           <div className="bg-[#f8fafc] bg-[radial-gradient(circle_at_top_right,rgba(234,88,12,0.03),transparent_40%),radial-gradient(circle_at_bottom_left,rgba(37,99,235,0.03),transparent_40%)] rounded-[48px] lg:rounded-[64px] w-full max-w-7xl h-full max-h-[95vh] overflow-hidden shadow-2xl flex flex-col border border-white/50">
              <div className="p-8 lg:p-12 pb-4 flex justify-between items-center"><div className="flex items-center gap-4"><div className="h-4 w-4 bg-orange-600 rounded-full animate-pulse"></div><h2 className="text-[12px] font-black uppercase text-slate-900 tracking-widest">Workspace Control Node</h2></div><button onClick={() => setShowSettings(false)} className="h-10 w-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900"><i className="fa-solid fa-xmark text-xl"></i></button></div>
-             <div className="px-6 lg:px-12 mb-8"><div className="flex bg-slate-100/70 p-2 rounded-[32px] gap-1 overflow-x-auto no-scrollbar shadow-inner">{['COMMAND', 'ENGINE', 'BACKBONE LOGIC', 'DISPLAY', 'DESIGN'].map(tab => (<button key={tab} onClick={() => setSettingsTab(tab as SettingsTab)} className={`px-6 lg:px-10 py-4 rounded-[28px] text-[10px] font-black uppercase tracking-widest transition-all ${settingsTab === tab ? 'bg-orange-600 text-white shadow-xl' : 'text-slate-400 hover:text-slate-600'}`}>{tab}</button>))}</div></div>
+             <div className="px-6 lg:px-12 mb-8"><div className="flex bg-slate-100/70 p-2 rounded-[32px] gap-1 overflow-x-auto no-scrollbar shadow-inner">{['COMMAND', 'ENGINE', 'BACKBONE LOGIC', 'DISPLAY', 'DESIGN', 'CLOUD SYNC'].map(tab => (<button key={tab} onClick={() => setSettingsTab(tab as SettingsTab)} className={`px-6 lg:px-10 py-4 rounded-[28px] text-[10px] font-black uppercase tracking-widest transition-all ${settingsTab === tab ? 'bg-orange-600 text-white shadow-xl' : 'text-slate-400 hover:text-slate-600'}`}>{tab}</button>))}</div></div>
              <div className="flex-1 overflow-y-auto px-6 lg:px-12 pb-12 space-y-12 no-scrollbar">
                 {settingsTab === 'DESIGN' && (
                   <div className="space-y-12 animate-in fade-in slide-in-from-bottom-6">
@@ -1422,6 +1491,87 @@ ${componentLogic}
                           })}
                         </div>
                      </div>
+                  </div>
+                )}
+                {settingsTab === 'CLOUD SYNC' && (
+                  <div className="space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-700">
+                    <div className="bg-white p-10 rounded-[48px] border border-slate-100 shadow-sm space-y-8">
+                      <div className="flex items-center gap-6">
+                        <div className="h-16 w-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 text-2xl">
+                          <i className="fa-solid fa-cloud"></i>
+                        </div>
+                        <div>
+                          <h3 className="text-[16px] font-black text-slate-900 uppercase tracking-widest">Cloud Sync Status</h3>
+                          <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Sync your branding and history across devices</p>
+                        </div>
+                      </div>
+
+                      <div className="h-px bg-slate-100 w-full"></div>
+
+                      {session?.email && session.email !== 'public@dpss.edu' ? (
+                        <div className="space-y-6">
+                          <div className="flex items-center justify-between p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                            <div className="flex items-center gap-4">
+                              <div className="h-12 w-12 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 font-black">
+                                {session.name.charAt(0)}
+                              </div>
+                              <div>
+                                <div className="text-[13px] font-black text-slate-900 uppercase">{session.name}</div>
+                                <div className="text-[10px] font-medium text-slate-400">{session.email}</div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                              <span className="text-[10px] font-black text-green-600 uppercase tracking-widest">Connected</span>
+                            </div>
+                          </div>
+                          <button 
+                            onClick={handleLogout}
+                            className="w-full py-5 rounded-3xl bg-rose-50 text-rose-600 text-[11px] font-black uppercase tracking-widest hover:bg-rose-100 transition-all flex items-center justify-center gap-3"
+                          >
+                            <i className="fa-solid fa-right-from-bracket"></i>
+                            Disconnect Cloud Account
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="space-y-8">
+                          <div className="p-8 bg-orange-50 rounded-[32px] border border-orange-100 text-center space-y-4">
+                            <i className="fa-solid fa-shield-halved text-3xl text-orange-500"></i>
+                            <div className="text-[13px] font-black text-slate-900 uppercase tracking-wide">Cloud Storage Disabled</div>
+                            <p className="text-[11px] font-medium text-slate-500 max-w-md mx-auto">Sign in with your DPSS account to automatically save your brand settings, logos, and worksheet history to the cloud.</p>
+                          </div>
+                          <button 
+                            onClick={handleGoogleLogin}
+                            disabled={authLoading}
+                            className="w-full py-6 rounded-[32px] bg-slate-900 text-white text-[12px] font-black uppercase tracking-widest hover:bg-black transition-all flex items-center justify-center gap-4 shadow-xl disabled:opacity-50"
+                          >
+                            {authLoading ? (
+                              <i className="fa-solid fa-circle-notch fa-spin"></i>
+                            ) : (
+                              <i className="fa-brands fa-google"></i>
+                            )}
+                            Connect with Google Cloud
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="bg-slate-50 p-8 rounded-[40px] border border-slate-100 space-y-4">
+                        <div className="h-10 w-10 bg-white rounded-2xl flex items-center justify-center text-orange-600 shadow-sm">
+                          <i className="fa-solid fa-palette"></i>
+                        </div>
+                        <div className="text-[12px] font-black text-slate-900 uppercase tracking-widest">Brand Persistence</div>
+                        <p className="text-[10px] font-medium text-slate-400 leading-relaxed">Your school name, address, and logo collection are automatically synced. No more re-uploading logos on different computers.</p>
+                      </div>
+                      <div className="bg-slate-50 p-8 rounded-[40px] border border-slate-100 space-y-4">
+                        <div className="h-10 w-10 bg-white rounded-2xl flex items-center justify-center text-blue-600 shadow-sm">
+                          <i className="fa-solid fa-clock-rotate-left"></i>
+                        </div>
+                        <div className="text-[12px] font-black text-slate-900 uppercase tracking-widest">Infinite History</div>
+                        <p className="text-[10px] font-medium text-slate-400 leading-relaxed">Access your generated tests from anywhere. Your history is stored securely in your private cloud partition.</p>
+                      </div>
+                    </div>
                   </div>
                 )}
              </div>

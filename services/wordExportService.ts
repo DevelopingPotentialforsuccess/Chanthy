@@ -8,8 +8,9 @@ export const exportToWord = async (
   htmlContent: string, 
   filename: string, 
   headerHtml: string = '', 
-  marginValue: string = '0.9in',
+  marginValue: string = '0.6in',
   fontFamily: string = 'Times New Roman',
+  lineHeight: string = '1.15',
   metadata?: ExportMetadata
 ) => {
   const tempDiv = document.createElement('div');
@@ -68,7 +69,7 @@ export const exportToWord = async (
     finalHtml += `
       <table border="0" cellspacing="0" cellpadding="0" width="100%" ${pageBreak}>
         <tr>
-          <td align="left" style="padding: 2pt 0;">
+          <td align="left" style="padding: 2pt 0; font-family: '${fontFamily}', serif; font-size: 12pt; line-height: ${lineHeight};">
             ${el.outerHTML}
           </td>
         </tr>
@@ -92,7 +93,7 @@ export const exportToWord = async (
   let metadataHtml = "";
   if (metadata) {
     metadataHtml = `
-      <div style="margin-bottom: 20pt; border-bottom: 1pt solid #ccc; padding-bottom: 10pt; font-size: 9pt; color: #666;">
+      <div style="margin-bottom: 20pt; border-bottom: 1pt solid #ccc; padding-bottom: 10pt; font-size: 9pt; color: #666; font-family: '${fontFamily}', serif;">
         ${metadata.title ? `<div style="font-size: 14pt; font-weight: bold; color: #000; margin-bottom: 5pt;">${metadata.title}</div>` : ''}
         ${metadata.author ? `<div><strong>Author:</strong> ${metadata.author}</div>` : ''}
         ${metadata.date ? `<div><strong>Date:</strong> ${metadata.date}</div>` : `<div><strong>Exported on:</strong> ${new Date().toLocaleDateString()}</div>`}
@@ -107,9 +108,11 @@ export const exportToWord = async (
       <style>
         @page Section1 { size: 8.5in 11.0in; margin: ${marginValue}; }
         div.Section1 { page: Section1; }
-        body { font-family: "${fontFamily}", serif; font-size: 12pt; line-height: 1.15; }
+        body { font-family: "${fontFamily}", serif; font-size: 12pt; line-height: ${lineHeight}; }
         img { border: none; }
-        table { mso-table-lspace:0pt; mso-table-rspace:0pt; }
+        table { mso-table-lspace:0pt; mso-table-rspace:0pt; border-collapse: collapse; }
+        td { font-family: "${fontFamily}", serif; font-size: 12pt; line-height: ${lineHeight}; }
+        .header-row { background-color: #334155; color: white; text-align: center; font-weight: bold; padding: 10px; }
       </style>
     </head>
     <body>
